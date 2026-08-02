@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "noEmit": true,
+    "resolveJsonModule": true,
+    // The base config's rootDir ("src") only fits emit builds; this config
+    // typechecks tests/test-utils outside src and never emits, so widen it.
+    "rootDir": "."
+  },
+  "include": ["src/**/*", "__tests__/**/*", "test-utils/**/*", "contracts/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

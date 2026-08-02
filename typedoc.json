@@ -1,0 +1,7 @@
+{
+  "entryPoints": ["src/**/*.ts"],
+  "exclude": ["src/index.ts", "src/utils/error/Error.ts"],
+  "out": "docs",
+  "excludePrivate": true,
+  "excludeNotDocumented": false
+}
