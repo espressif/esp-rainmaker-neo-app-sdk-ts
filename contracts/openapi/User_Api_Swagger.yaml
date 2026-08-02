@@ -1,0 +1,768 @@
+openapi: 3.0.0
+info:
+  title: RMNG Auth & Accounts API
+  version: 1.0.0
+  description: |
+    Sign-up, sign-in, and account management for the ESP RainMaker NG
+    cloud. Anything that produces or rotates an access token lives
+    here; once you have a token, the rest of the platform lives in the
+    **RMNG Platform API** (`Api_Swagger.yaml`).
+
+    Endpoints under `/v1/user/auth/*` cover the end-user lifecycle
+    (signup, verify, login, refresh, password reset). The
+    `/v1/admin/auth/*` mirror gives the same surface against the admin
+    Cognito user pool.
+
+    Typical login flow:
+
+    1. `POST /v1/user/auth/signup` - register (mails a verification code).
+    2. `POST /v1/user/auth/signup/verify` - confirm with the mailed code.
+    3. `POST /v1/user/auth/token` - exchange username + password for
+       `access_token`, `refresh_token`, and `id_token`.
+    4. Send `Authorization: Bearer <access_token>` on `/v1/user/auth/*`
+       and `/v1/users/*`; `Bearer <id_token>` on `/v1/admin/auth/*`.
+       Sending the wrong one returns `401`.
+    5. Keep the `id_token` too: `POST /v1/user/credentials` (in the
+       **RMNG Platform API**) takes `Bearer <access_token>` in the header
+       and the `id_token` in the body, and returns temporary AWS
+       credentials. Both must come from the same sign-in. Every platform
+       API call after that is SigV4-signed with those credentials.
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: esp-rainmaker-admin@espressif.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+# A `servers:` block lets Swagger UI (and the docusaurus-openapi-docs
+# Try-it-out panel) populate a base URL. Replace `{deployment}` with
+# your stack's API Gateway hostname; `{stage}` is the API Gateway stage,
+# which every RMNG deployment creates as `prod`.
+servers:
+  - url: https://{deployment}/{stage}
+    description: Your RMNG deployment's API Gateway base URL
+    variables:
+      deployment:
+        default: api.example.com
+        description: Replace with your API Gateway hostname.
+      stage:
+        default: prod
+        description: API Gateway stage name.
+
+# Top-level tag declarations control rendering order in Swagger UI
+# and in the docs-site sidebar.
+tags:
+  - name: User Auth
+    description: Sign up, log in, refresh tokens. Used by end-user apps.
+  - name: User Password Management
+    description: Password recovery and change for end users.
+  - name: Admin Auth
+    description: Login and signout for admin / superadmin accounts.
+  - name: Admin Profile
+    description: Read and manage the signed-in admin's profile.
+
+paths:
+  # ==========================================
+  # User Authentication
+  # ==========================================
+
+  /v1/user/auth/signup:
+    post:
+      summary: Register a new user
+      description: |
+        Creates a new user registration entry.
+        Triggers the verification flow (Email/SMS).
+      tags:
+        - User Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "201": # Changed to 201 Created
+          description: Registration initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/user/auth/signup/verify:
+    post:
+      summary: Confirm registration
+      description: |
+        Finalizes the signup process by verifying the code.
+        This transforms a "Registration" into a active "User".
+      tags:
+        - User Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifySignupRequest"
+      responses:
+        "200":
+          description: Verification successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifySignupResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /v1/user/auth/token:
+    post:
+      summary: Login (Create Token)
+      description: |
+        Exchanges credentials (username/password) for Access, Refresh, and ID tokens.
+        concept: You are 'creating' a new session token.
+      tags:
+        - User Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninRequest"
+      responses:
+        "200":
+          description: Token generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigninResponse"
+        "401":
+          description: Invalid Credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /v1/user/auth/token/refresh:
+    post:
+      summary: Refresh Access Token
+      description: |
+        Uses a valid refresh token to obtain a fresh access token.
+      tags:
+        - User Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigninResponse"
+
+  # ==========================================
+  # GROUP 2: Password Recovery (User)
+  # ==========================================
+
+  /v1/user/auth/password-recovery:
+    post:
+      summary: Request password reset
+      description: Initiates the recovery flow (sends OTP).
+      tags:
+        - User Password Management
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Reset code sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForgotPasswordResponse"
+
+  /v1/user/auth/password-recovery/confirmation:
+    post:
+      summary: Complete password reset
+      description: Updates the password using the recovery OTP.
+      tags:
+        - User Password Management
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmForgotPasswordRequest"
+      responses:
+        "200":
+          description: Password successfully reset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangePasswordResponse"
+
+  # ==========================================
+  # GROUP 3: Authenticated User Resources
+  # ==========================================
+
+  /v1/user/auth/password:
+    post:
+      summary: Change my password
+      description: |
+        Updates the password for the currently authenticated user.
+        The Cognito access token must be supplied in the request body
+      tags:
+        - User Password Management
+      security:
+        - CognitoAuthorizer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangePasswordResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ==========================================
+  # GROUP 4: Authenticated User Profile
+  # ==========================================
+
+  /v1/users/{userId}:
+    get:
+      summary: Get user details
+      description: |
+        Returns the profile of the user. Use `me` as the `userId` to get details
+        for the currently authenticated caller; any other value must equal the
+        caller's own `user_id` or the request is rejected with `403`.
+
+        Requires `Authorization: Bearer <access_token>`. An `id_token`, or a
+        token sent without the `Bearer` prefix, returns `401`.
+      tags:
+        - User Auth
+      security:
+        - CognitoAuthorizer: []
+      responses:
+        "200":
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ==========================================
+  # Admin Authentication
+  # ==========================================
+
+  /v1/admin/auth/token:
+    post:
+      summary: Admin Login (Create Token)
+      description: |
+        Exchanges admin credentials for Access, Refresh, and ID tokens.
+      tags:
+        - Admin Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninRequest"
+      responses:
+        "200":
+          description: Admin authenticated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigninResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/admin/auth/token/refresh:
+    post:
+      summary: Refresh Admin Access Token
+      description: |
+        Uses a valid refresh token to obtain a fresh access token for an admin.
+      tags:
+        - Admin Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigninResponse"
+
+  /v1/admin/auth/signout:
+    post:
+      summary: Admin Signout
+      description: |
+        Invalidates the admin session.
+        - Global: Invalidates all sessions via Access Token.
+        - Device: Revokes the specific Refresh Token.
+      tags:
+        - Admin Auth
+      security:
+        - CognitoAuthorizer: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignOutRequest"
+      responses:
+        "200":
+          description: Signout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignOutResponse"
+
+  # ==========================================
+  # GROUP 2: Admin Password Recovery
+  # ==========================================
+
+  /v1/admin/auth/password-recovery:
+    post:
+      summary: Request Admin Password Reset
+      description: Initiates the recovery flow for an admin (sends OTP).
+      tags:
+        - Admin Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Reset code sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForgotPasswordResponse"
+
+  /v1/admin/auth/password-recovery/confirmation:
+    post:
+      summary: Complete Admin Password Reset
+      description: Updates the admin password using the recovery OTP.
+      tags:
+        - Admin Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmForgotPasswordRequest"
+      responses:
+        "200":
+          description: Password successfully reset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangePasswordResponse"
+
+  # ==========================================
+  # GROUP 3: Admin Resources (Authenticated)
+  # ==========================================
+
+  /v1/admin/auth/password:
+    post:
+      summary: Change My Password (Admin)
+      description: |
+        Updates the password for the currently authenticated admin.
+        The Cognito access token must be supplied in the request body
+      tags:
+        - Admin Profile
+      security:
+        - CognitoAuthorizer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangePasswordResponse"
+
+  # ==========================================
+  # GROUP 4: User Signout (Refactored)
+  # ==========================================
+
+  /v1/user/auth/signout:
+    post:
+      summary: User Signout
+      description: |
+        Invalidates the user session.
+        Matches the pattern of the Admin signout for consistency.
+      tags:
+        - User Auth
+      security:
+        - CognitoAuthorizer: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignOutRequest"
+      responses:
+        "200":
+          description: Signout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignOutResponse"
+
+components:
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description:
+            User's email address (required if phone_number not provided)
+          example: "user@example.com"
+        phone_number:
+          type: string
+          pattern: '^\+[1-9]\d{1,14}$'
+          description:
+            User's phone number in E.164 format (required if email not provided)
+          example: "+1234567890"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: User's password
+          example: "SecurePassword123!"
+      oneOf:
+        - required: [email]
+        - required: [phone_number]
+
+    SignupResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: Internal user ID (for internal use)
+        requires_verification:
+          type: boolean
+          description: Whether verification is required
+          example: true
+        message:
+          type: string
+
+    VerifySignupRequest:
+      type: object
+      required:
+        - code
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email (if signed up with email)
+          example: "user@example.com"
+        phone_number:
+          type: string
+          description: User's phone number (if signed up with phone)
+          example: "+1234567890"
+        code:
+          type: string
+          description: Verification code received via email or SMS
+          example: "123456"
+      oneOf:
+        - required: [email]
+        - required: [phone_number]
+
+    VerifySignupResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    SigninRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: User's email or phone number
+          example: "user@example.com"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: User's password
+          example: "SecurePassword123!"
+
+    SigninResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refresh_token:
+          type: string
+          description: Refresh token for obtaining new access tokens
+          example: "user123#COGNITO#abc123def456"
+        id_token:
+          type: string
+          description: JWT ID token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          description: Token type (always "Bearer")
+          example: "Bearer"
+        expires_in:
+          type: integer
+          description: Token expiration time in seconds
+          example: 3600
+        message:
+          type: string
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: Refresh token obtained from signin
+          example: "user123#COGNITO#abc123def456"
+
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+          description: User's email or phone number
+          example: "user@example.com"
+
+    ForgotPasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    ConfirmForgotPasswordRequest:
+      type: object
+      required:
+        - username
+        - code
+        - new_password
+      properties:
+        username:
+          type: string
+          description: User's email or phone number
+          example: "user@example.com"
+        code:
+          type: string
+          description: Verification code received via email or SMS
+          example: "123456"
+        new_password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: New password
+          example: "NewSecurePassword123!"
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - access_token
+        - old_password
+        - new_password
+      properties:
+        access_token:
+          type: string
+          description:
+            Access token for the authenticated user; sent in the body because the
+            Authorization header carries the id token, not the access token.
+          example: "eyJraWQiOi...access..."
+        old_password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: Current password
+          example: "OldPassword123!"
+        new_password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: New password
+          example: "NewSecurePassword123!"
+
+    ChangePasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    GetUserResponse:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string
+          description: Cognito user identifier (the `sub` claim).
+          example: "8f3e9c1a-2b4d-4f6e-9a8c-1d2e3f4a5b6c"
+        email:
+          type: string
+          format: email
+          description: User's email address, if signed up with email.
+          example: "user@example.com"
+        phone_number:
+          type: string
+          description:
+            User's phone number in E.164 format, if signed up with phone.
+          example: "+1234567890"
+
+    SignOutRequest:
+      type: object
+      properties:
+        global:
+          type: string
+          description: |
+            Set to the string "true" to invalidate all sessions (global signout).
+            Any other value, or omitted, performs a single-device signout.
+          example: "false"
+        access_token:
+          type: string
+          description: |
+            Access token of the session. Required when global is "true".
+          example: "cognito-access-token-string"
+        refresh_token:
+          type: string
+          description: |
+            Refresh token to revoke. Required for single-device signout (when global is not "true").
+          example: "cognito-refresh-token-string"
+
+    SignOutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Detailed error message
+          example: "Invalid request"
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Unauthorized:
+      description: Unauthorized - Invalid or missing authentication
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Unauthorized"
+
+    Forbidden:
+      description:
+        Forbidden - User does not have permission to access the resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: "Internal server error"
+
+  securitySchemes:
+    CognitoAuthorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: |
+        Cognito User Pool JWT. Send `Bearer <access_token>` for `/v1/users/*` and
+        `/v1/user/auth/*`; `Bearer <id_token>` for `/v1/admin/auth/*`.
+      x-amazon-apigateway-authtype: cognito_user_pools
+
+security: []
