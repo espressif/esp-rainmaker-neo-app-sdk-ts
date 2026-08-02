@@ -1,0 +1,206 @@
+# Stages
+stages:
+  - test
+  - notify
+  - pages
+  - publish
+
+# Workflow: MRs to pre-release or tag pipelines
+workflow:
+  rules:
+    # Run pipeline for MRs targeting the pre-release branch
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "pre-release"'
+    # Run pipeline for tags
+    - if: "$CI_COMMIT_TAG"
+
+# Define variables
+variables:
+  NODE_VERSION: "20"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+  # used by send-test-results.js
+  SMTP_PORT: "587"
+  SMTP_SECURE: "false"
+  # ANSI Style codes for terminal output
+  ANSI_BOLD_ITALIC_CODE: "\x1b[1;3m"
+  ANSI_BOLD_BLUE_COLOR_CODE: "\x1b[1;34m"
+  ANSI_RESET_CODE: "\x1b[0m"
+
+default:
+  image: node:${NODE_VERSION}
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+# Cache key from package-lock.json; pull-push for .npm and node_modules
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm/
+    - node_modules/
+  policy: pull-push
+
+# Fast offline contract gate — lint, typecheck, schema-bundle
+# freshness, and the contract/workflow/adapter test layers. Everything here is
+# network-free and secret-free; it runs in parallel with unit_tests.
+# schema:verify regenerates the bundle and fails if the committed artifacts
+# are stale (i.e. someone changed the spec/config without running schema:gen).
+offline_gates:
+  stage: test
+  variables:
+    # CI validates fixtures closed-world — any field the spec does not
+    # declare is an error. Local runs stay lenient by default; use
+    # `npm run test:closed` to reproduce CI behaviour.
+    RMNEO_CLOSED_WORLD: "1"
+  before_script:
+    - npm ci
+  script:
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Lint...${ANSI_RESET_CODE}"
+    - npm run lint
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Typecheck (src + tests + test-utils)...${ANSI_RESET_CODE}"
+    - npm run typecheck
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Schema-converter unit tests...${ANSI_RESET_CODE}"
+    - npm run schema:selftest
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Schema bundle freshness (schema:verify)...${ANSI_RESET_CODE}"
+    - npm run schema:verify
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Tracking coverage (every SDK path tracked or consciously ignored)...${ANSI_RESET_CODE}"
+    - npm run contracts:coverage-check
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Contract layer...${ANSI_RESET_CODE}"
+    - npm run test:contract
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Workflow layer...${ANSI_RESET_CODE}"
+    - npm run test:workflow
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Adapter contract layer...${ANSI_RESET_CODE}"
+    - npm run test:adapter
+  rules:
+    # MR pipelines targeting pre-release, and tag pipelines (a broken schema
+    # bundle must not reach npm publish).
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "pre-release"'
+      when: on_success
+    - if: "$CI_COMMIT_TAG"
+      when: on_success
+  # No retry override: these steps are deterministic and offline — a failure
+  # is a real failure. Infra retries come from the `default` block.
+
+# Run unit tests with generation of code coverage report
+unit_tests:
+  stage: test
+  variables:
+    # Same closed-world fixture validation as offline_gates.
+    RMNEO_CLOSED_WORLD: "1"
+  before_script:
+    - npm ci
+    # Create .env.test file for tests using GitLab CI/CD variables
+    - |
+      cat > .env.test << EOF
+      ApiGatewayUrl=${ApiGatewayUrl}
+      UserPoolId=${UserPoolId}
+      UserPoolClientId=${UserPoolClientId}
+      IdentityPoolId=${IdentityPoolId}
+      IoTEndpointUrl=${IoTEndpointUrl}
+      StackRegion=${StackRegion}
+      TEST_API_PATH=${TEST_API_PATH}
+      TEST_USER_API_BASE_URL=${TEST_USER_API_BASE_URL}
+      TEST_USER_API_PATH=${TEST_USER_API_PATH}
+      TEST_USERNAME=${TEST_USERNAME}
+      TEST_PASSWORD=${TEST_PASSWORD}
+      EOF
+  script:
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Running unit tests with coverage...${ANSI_RESET_CODE}"
+    - npm run test:coverage
+    # Extract coverage metrics from test output and save to coverage-summary.json
+    - |
+      echo -e "${ANSI_BOLD_ITALIC_CODE}Extracting coverage metrics...${ANSI_RESET_CODE}"
+      # Create coverage summary from the coverage report
+      if [ -f "coverage/coverage-summary.json" ]; then
+        cp coverage/coverage-summary.json coverage-metrics.json
+        echo -e "${ANSI_BOLD_ITALIC_CODE}Coverage summary found and copied${ANSI_RESET_CODE}"
+      else
+        echo -e "${ANSI_BOLD_ITALIC_CODE}Coverage summary not found, email will not include coverage section${ANSI_RESET_CODE}"
+      fi
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+      - junit.xml
+      - coverage-metrics.json
+  rules:
+    # This job should run automatically ONLY within MR pipelines targeting the pre-release branch
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "pre-release"'
+      when: on_success # Explicitly run on success within the pipeline
+    # No other rules needed, workflow:rules controls pipeline creation
+  # No retry on script_failure — unit tests are offline and
+  # deterministic, so a failure that "passes on retry" is a flaky test being
+  # hidden, not an infrastructure hiccup. Infra retries (runner failure,
+  # timeout) are inherited from the `default` block.
+  after_script:
+    - rm -f .env.test
+
+# Notify test results of unit_ tests job along with CI metadata and code coverage report
+notify_test_results:
+  stage: notify
+  needs:
+    - unit_tests
+  before_script:
+    - npm install nodemailer handlebars
+  script:
+    - node ci-helpers/notify/send-test-results.js
+  rules:
+    # Rule for MRs targeting the pre-release branch
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "pre-release"'
+      when: on_success
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  allow_failure: true # Allow this job to fail without failing the pipeline for MWPS
+
+# Publish package to npm registry
+publish_package:
+  stage: publish
+  before_script:
+    - npm config set registry https://registry.npmjs.org/
+     # Configure NPM authentication
+    - echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
+    - npm ci
+  script:
+    # Check package version against tag version
+    - node ci-helpers/publish/verify-package-version.js
+    - npm run build
+    - npm publish
+  rules:
+    # Rule for tags matching semantic version format
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      when: on_success
+      # Prevent running in other cases
+    - when: never
+  retry:
+    max: 2
+  allow_failure: false
+
+# Publish code coverage report to GitLab Pages
+publish_coverage:
+  stage: pages
+  needs:
+    - unit_tests
+  script:
+    - mkdir -p public
+    - echo -e "${ANSI_BOLD_ITALIC_CODE}Coverage report is being published to GitLab Pages at ${ANSI_BOLD_BLUE_COLOR_CODE}${CI_PAGES_URL}${ANSI_RESET_CODE}"
+    - cp -r coverage/lcov-report/* public/
+  # specifies that this is a Pages job and publishes the default public directory
+  pages: true
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "pre-release"'
+      when: on_success
