@@ -1,0 +1,41 @@
+# Node modules
+/node_modules/
+
+# env file need to run test
+.env.test
+
+# Test credentials file (contains sensitive user credentials)
+test-credentials.json
+
+# Build artifacts
+/dist/
+
+# Documentation artifacts
+/docs/
+
+# rollup
+.rollup.cache
+buildMeta
+
+# Test coverage
+/coverage/
+
+# Miscellaneous
+*.cache
+*.tgz
+.DS_Store
+.vscode
+.idea
+.npm/
+*.log
+**/.DS_Store
+junit.xml
+
+.npmrc
+.env
+.env.test
+
+
+# Personal spec-source override (D-018) — never committed; its presence marks
+# sync/drift runs as non-default (DO-NOT-COMMIT warning, guardrail skip).
+contracts/openapi/spec-source.local.json
