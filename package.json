@@ -1,0 +1,116 @@
+{
+  "name": "@espressif/rainmaker-neo-base-sdk",
+  "description": "ESP RainMaker Neo TypeScript SDK for JS-based apps — Cognito auth, MQTT control, device provisioning, groups, and real-time node updates.",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "author": "Espressif Systems (Shanghai) CO LTD",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/espressif/esp-rainmaker-neo-app-sdk-ts.git"
+  },
+  "homepage": "https://github.com/espressif/esp-rainmaker-neo-app-sdk-ts#readme",
+  "bugs": {
+    "url": "https://github.com/espressif/esp-rainmaker-neo-app-sdk-ts/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && rollup -c rollup.config.mjs",
+    "test": "jest --selectProjects unit",
+    "test:watch": "jest --selectProjects unit --watch",
+    "test:coverage": "jest --selectProjects unit --coverage",
+    "test:integration": "jest --selectProjects integration",
+    "test:contract": "jest --selectProjects contract",
+    "test:workflow": "jest --selectProjects workflow",
+    "test:adapter": "jest --selectProjects adapter",
+    "test:all": "jest --selectProjects unit contract workflow adapter integration",
+    "test:closed": "RMNEO_CLOSED_WORLD=1 jest --selectProjects unit contract workflow adapter",
+    "openapi:sync": "node scripts/sync-openapi.mjs",
+    "openapi:sync:check": "node scripts/sync-openapi.mjs --check",
+    "schema:gen": "node test-utils/schema-generator/generate.mjs",
+    "schema:selftest": "node --test test-utils/schema-generator/openapiToJsonSchema.test.mjs scripts/lib/spec-source.test.mjs",
+    "schema:verify": "node test-utils/schema-generator/generate.mjs && git diff --exit-code -I \"fingerprintsGeneratedAt\" contracts/openapi/generated contracts/openapi/manifest.json",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "contracts:drift-check": "node scripts/check-contract-drift.mjs",
+    "contracts:coverage-check": "node scripts/check-tracking-coverage.mjs",
+    "contracts:build": "npm run openapi:sync && npm run schema:gen",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint src __tests__ --ext .ts",
+    "genDocs": "rm -rf docs && typedoc"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "esp",
+    "esp-rainmaker",
+    "esp-rainmaker-neo-sdk",
+    "esp-rainmaker-app-sdk",
+    "esp-device-provisioning",
+    "esp-device-control",
+    "esp-mqtt-communication",
+    "esp-aws-iot-core",
+    "esp-cognito-auth",
+    "react-native",
+    "typescript",
+    "iot",
+    "esp32",
+    "device-management",
+    "real-time-communication",
+    "wifi-provisioning",
+    "aws-cognito",
+    "mqtt"
+  ],
+  "dependencies": {
+    "google-protobuf": "^3.21.2"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^10.1.1",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@types/google-protobuf": "^3.15.12",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.17.24",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-junit": "^16.0.0",
+    "js-yaml": "^5.2.1",
+    "prettier": "^3.0.0",
+    "rollup": "^4.55.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "text-encoding": "^0.7.0",
+    "ts-jest": "^29.1.2",
+    "typedoc": "^0.27.6",
+    "typescript": "^5.8.2",
+    "whatwg-fetch": "^3.6.20"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
