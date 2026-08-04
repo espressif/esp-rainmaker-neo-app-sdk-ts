@@ -1,0 +1,167 @@
+{
+  "generatedAt": "2026-08-04T10:36:39.451Z",
+  "source": "https://api.docs.neo.rainmaker.espressif.com (+3 per-file URLs)",
+  "specs": {
+    "Api_Swagger.yaml": {
+      "sha256": "012b16cfb21ebb82a5fb06f15b1c21e9b927619fca5e642a9742a7ea6ac6c0e0",
+      "bytes": 226061,
+      "format": "openapi"
+    },
+    "User_Api_Swagger.yaml": {
+      "sha256": "a1e912481a106f388ca439a77ce57e6aab91249ee964ab44e7dc943e94e04f12",
+      "bytes": 50803,
+      "format": "openapi"
+    },
+    "MQTT_User.yaml": {
+      "sha256": "e11b151939ff72200b73553fb06aef39dc71f8ee31a730ec109a5e313c8c7a24",
+      "bytes": 23163,
+      "format": "asyncapi"
+    },
+    "MQTT_Node.yaml": {
+      "sha256": "133488b78106e687c20e5cc7fbc492f8c80398dd86a5dcdb65f423b913f27fc2",
+      "bytes": 80285,
+      "format": "asyncapi"
+    },
+    "Push_User.yaml": {
+      "sha256": "4e92c6587901c8b55d0dabe3a7aaf715017a6558ae45ed84bdbc2ba1a1e8bb9a",
+      "bytes": 9700,
+      "format": "asyncapi"
+    }
+  },
+  "operationFingerprints": {
+    "Api_Swagger.yaml": {
+      "POST /v1/groups": "7dfd869f82518fcd4d1998df99f25ebb000553ef24cc034170955edd3622ba6e",
+      "POST /v1/assumed-roles": "d525da5584d2913c4a6293cfc8e3ef4961993f2812a80ef9065e7ab7655e42bb",
+      "POST /v1/user/credentials": "c0bf25e5ae018cee463ba5aa325d59482f507bdb917a65c5029a0d80accfc7f5",
+      "GET /v1/groups": "b1eabbfbb167a25615e7dc12892c71541fd4edddcd986b3fa427b9048ae9dcbf",
+      "GET /v1/groups/{groupId}/users": "a336c7fbaf7911c989a8a9f8b9d394412185618a77d27055cdbf9d5f6b09ffbe",
+      "POST /v1/groups/{groupId}/sharing-requests": "09b1ce2178c5bc696e2a40ce258081cbc307a5fd38027151e1da7098964b3280",
+      "GET /v1/sharing-requests/received": "e3b86ba3b1953c581790f50a97686e141446c926e8672172fd2eaf31af09f5b0",
+      "POST /v1/sharing-requests/{requestId}/accept": "d95bb4a4c0007d2fe38c453ed2a37f156e893d975fc4b36d979309705bee27cf",
+      "POST /v1/sharing-requests/{requestId}/reject": "d95bb4a4c0007d2fe38c453ed2a37f156e893d975fc4b36d979309705bee27cf",
+      "PATCH /v1/groups/{groupId}": "ea89e84a0712c6a49846a9f7d71b1a6be8ab37793fef9ac1b210fa6536878e7b",
+      "DELETE /v1/groups/{groupId}": "5d965e9f481fd913339eeea34c7523f2339b3161a5e8a020e27fd6d2a1d7cf03",
+      "POST /v1/groups/{groupId}/node-assoc-requests": "a6b40da997b547c71cac34397bc679e05273381a320613b4accb8637d9bcfa56",
+      "POST /v1/groups/{groupId}/node-assoc-requests/{requestId}/verify": "5a72a11a2bf960efb66de853df36dd0317b0ae0c07bec21d610033bf989040ad",
+      "POST /v1/groups/{groupId}/node-assoc-requests/{requestId}/confirm": "cebb2b042de4ea1e25c567741c1f2fe14edbdaa28baa9cf667ff4a457cbf88ea",
+      "POST /v1/groups/{groupId}/subgroups": "5679429b8a16430da147f52b1cf7e1af21d8e45381baa06fb1014e510633d9f3",
+      "PATCH /v1/groups/{groupId}/subgroups/{subGroupId}": "9a1d2fa433a088cf535017423c81d34917dc389cdd0c30009161e5737939a1ff",
+      "DELETE /v1/groups/{groupId}/subgroups/{subGroupId}": "40b71c0c73456bc02b744e8dac52465a4a6b8b87158b6a5cc40873f24d5ac721",
+      "POST /v1/groups/{groupId}/subgroups/{subGroupId}/sharing-requests": "f4f603946047276f7159b1be607c17b7fb93e41ccb8099493fbf7a746b9c5dbc",
+      "PUT /v1/groups/{groupId}/subgroups/{subGroupId}/nodes/{nodeId}": "0685667519f5500c7e1bc9388802d14ad61e52a92c30b6f86705eae350370155",
+      "DELETE /v1/groups/{groupId}/subgroups/{subGroupId}/nodes/{nodeId}": "0685667519f5500c7e1bc9388802d14ad61e52a92c30b6f86705eae350370155",
+      "DELETE /v1/groups/{groupId}/users/{userId}": "6bd9fc00291ebd5b86609453d5a653bbe511754a19cfba4866fa76d4070d0032",
+      "DELETE /v1/groups/{groupId}/subgroups/{subGroupId}/users/{userId}": "662300f8ed9fe51b2f8a010856da684dba73c9af7563970d69077596d51dbd2e",
+      "DELETE /v1/groups/{groupId}/nodes/{nodeId}": "3fa90b152f78ca657abc5ab193d8befe3a0df5f521933d1a499b6e9921dc1071",
+      "GET /v1/groups/{groupId}/nodes/{nodeId}/config": "8c9dab35181f1e30108193a936a1db081cc3463c0f0ebf1d3c4cea14f389563c",
+      "GET /v1/groups/{groupId}/nodes/{nodeId}/triggers": "7bd5fb33e503224d10035c231b42489dba8e6cee79e3f27856839ad1ae4968c4",
+      "PUT /v1/groups/{groupId}/nodes/{nodeId}/triggers": "7c5ed24c97fd66f7bd0dd8dbfd63c2a0a9698414a6b457dbfcb4c466b03950f8",
+      "DELETE /v1/groups/{groupId}/nodes/{nodeId}/triggers": "3fa90b152f78ca657abc5ab193d8befe3a0df5f521933d1a499b6e9921dc1071",
+      "GET /v1/groups/{groupId}/nodes/{nodeId}/schedules": "7a16256fca60822ef581bcf5642a0939df8460d3c868972e17cbd4ff33ac3405",
+      "PUT /v1/groups/{groupId}/nodes/{nodeId}/schedules": "5f8d7f7b010060ef72aaeed3533ac461b354c9e5879f5f4b396c2b9f3332ac15",
+      "DELETE /v1/groups/{groupId}/nodes/{nodeId}/schedules": "3fa90b152f78ca657abc5ab193d8befe3a0df5f521933d1a499b6e9921dc1071",
+      "GET /v1/groups/{groupId}/service/automations": "bd398124b6617552f5e4a420ad341b83206413fdc5da69f48e2557218aced370",
+      "POST /v1/groups/{groupId}/service/automations": "15b332873d4244a8bdc48152a9be78c4e8423fecac822b90370665af984b0d54",
+      "DELETE /v1/groups/{groupId}/service/automations": "5d965e9f481fd913339eeea34c7523f2339b3161a5e8a020e27fd6d2a1d7cf03",
+      "GET /v1/groups/{groupId}/service/automations/{automationId}": "94647358121ad27d5b0aa691ba89ac108445ed4361d20bdb4b7c144f7b73ac20",
+      "PUT /v1/groups/{groupId}/service/automations/{automationId}": "00d7eace02ea127ae5c100470f04ed607b6ff81fab795d9ceed1b8fab76d2ec3",
+      "DELETE /v1/groups/{groupId}/service/automations/{automationId}": "bd049497e9bf969ee4f761965406233094c41ba304b9772b8bbfa44f1bb77c88",
+      "GET /v1/groups/{groupId}/subgroups/{subGroupId}/users": "8cbefbe46daa5a2d97253031b353966ab69cde85098954a6f41ef410d1d5fdc8",
+      "GET /v1/integrations": "6dcfa3321af087e4275e8823dbb08ee1b9bb0774a8a36fe21340f297c47c0c8e",
+      "PUT /v1/integrations/{integrationId}/endpoints": "a228fe00d3032af7f34e5adafed6c0267568c4633308fb79efb2bb5b78d8bf06",
+      "DELETE /v1/integrations/{integrationId}/endpoints/{endpointId}": "00f18595368ec5ab21a4d2afe6b64f7ce5cc1de1a8b257aeb3ab2c4f63f53b6b",
+      "GET /v1/groups/{groupId}/nodes/{nodeId}/timeseries/raw": "a6a35cc0667705e2d2090b2d6a51f92c7b94c4dada46020d87a924146dd665b2",
+      "GET /v1/groups/{groupId}/nodes/{nodeId}/timeseries/latest": "6f361786b32875895e6297086096c4c45e0d6843857e28dcca3a426c4d1bd9cc",
+      "GET /v1/groups/{groupId}/nodes/{nodeId}/timeseries/aggregates": "e408a4d445275b068949ca2232fe3d62969e0ce18f7a1511c9be3655fe28a5b4"
+    },
+    "User_Api_Swagger.yaml": {
+      "POST /v1/user/auth/token": "53a267e48f4cbd73a1b579c757c6f083da9aa8c929b945c18076146eec9fad3d",
+      "POST /v1/user/auth/signup": "b09851528420758144e27e141c5d3edd28869a79b8df8cfe8a3cf835be6533f3",
+      "POST /v1/user/auth/signup/verify": "379f46310c20939a7c89f901c07600e8c0398d35728a57dceb9f73343bf1baf2",
+      "POST /v1/user/auth/password-recovery": "e1ded9985a52faf84ab173c1434cf9aaa085f4755f7f557530bf410144728e3e",
+      "POST /v1/user/auth/password-recovery/confirmation": "04dd16fce91252dca23fbef03ede655f096702de936249c394ed76636b1f44e0",
+      "POST /v1/user/auth/password": "c2d0beef11070db0702bf1f9f9547c79a03526d5be3d138f2dd2a662183f0ae0",
+      "POST /v1/user/auth/token/refresh": "3c18081001bbbf2c9ea65b65a5b127ce97125d728734e95f9af66481fbe21a1f",
+      "POST /v1/user/auth/signout": "c01db37c69bc82b7db921b9003734a233262d258dd308e0fdf264f2ee39fc2df",
+      "GET /v1/users/{userId}": "604c21ace5e60a57aa4336f95b1d3d63b45e475a1f36101dd885a1eebf85f156"
+    },
+    "MQTT_User.yaml": {
+      "MESSAGE paramControlMessage": "82ef96cebaf5fbe16269fd18b0240d78f5b9b90a4155a17eb797115b09148ecf",
+      "MESSAGE groupControlMessage": "82ef96cebaf5fbe16269fd18b0240d78f5b9b90a4155a17eb797115b09148ecf",
+      "MESSAGE shadowUpdateDocumentsMessage": "3377625b35ad0e933951073c6242d8868c65f340fca6e50ec8e533f1701222cf",
+      "MESSAGE shadowDeltaMessage": "8e6099243705b4f15c110cd74afc21b27cc5fe339554c484c17eb60cf03790ef",
+      "MESSAGE shadowUpdateAcceptedMessage": "4ed94d11dc04b4a3685cccd5d8bd54621e228bf9def667c4839ae36ec845eef9",
+      "MESSAGE shadowUpdateRejectedMessage": "bfc626abd7db39a1e8baf817413e0898358641fbf3bfb641fc33744fb448ffb2",
+      "CHANNEL deviceControl": "66b048252507b8a9cdbbdc4c9a034a0f3497c8b90a79f314ae443c82b3246d25",
+      "CHANNEL groupControlBroadcast": "ff6bb8fc1f57ba898c8cc2d9b6d0150c008d6c138eb388ca99a04c7c8ec46b41",
+      "CHANNEL subgroupControlBroadcast": "4e46fc64b1c1941c45ace37921920a1e761f454750fc85bb7208da8ff724a545",
+      "CHANNEL shadowUpdateDocuments": "ec5723c07068dbdb2dea510e0b8759039699bc96abfd3c163a168d049dd26d09",
+      "CHANNEL shadowDelta": "fe304fa15556a5e397f9f9c8ed03b749042fa6c50ae2c9a228cbbc66d41d1341",
+      "CHANNEL shadowUpdateAccepted": "14f3767c9d5d8814269c04ff28099df0a764166859fe73a20c8dfb3c1ef1dfe0",
+      "CHANNEL shadowUpdateRejected": "530204afd324849857b42b86de038add9cf04ce7fda29471e41c3f369cddb088",
+      "CHANNEL shadowGet": "8e339e7ff8ebff39a78b3cdc4111110d8af7ba83464e0eb64737692f406b4c44",
+      "CHANNEL shadowGetAccepted": "7583fe77473f5afa3513c5e1a389acf9e932d4bb867f2748332f507bd2706b9c"
+    },
+    "Push_User.yaml": {
+      "MESSAGE apnsNotification": "a5419e7fb038066f2ee644d3a0146271c45dbca9c09c1e865f2c8a4c7da2bcc3",
+      "MESSAGE fcmNotification": "fbdfce44e6b4cc8b57a9f36aecf84dd954e38e3f62f43cdf86fe28d99bda58ea",
+      "CHANNEL apnsPush": "1bc354b37fe5fa541ad6c189445534da9ef033d7b610bd5be492f1809f11571b",
+      "CHANNEL fcmPush": "ca31ac33993e7dae391919af9b45d9dd53c0db15a1c910db2b39c2eb3a3380c3"
+    }
+  },
+  "schemaFingerprints": {
+    "Api_Swagger.yaml": {
+      "CreateGroupRequest": "35c3065558fb9a4372f66be33e3ba377cc6c42f1eecc58157140d7011e8c647c",
+      "CreateGroupResponse": "43bc65fbeff6ddff0258e488975e8c9c9b57244cc45791174540e2242b0c57d4",
+      "AssumeRoleResponse": "5355e0a8e0f534e151c0b8ed91ba993f87c24372f9162fe8f1d86079c2125f80",
+      "UserCredsResponse": "3c51a4e15c417578284789cd8abcbd11ac8a8617680c05abc7a9f222ccd60aad",
+      "ListGroupsResponse": "3d0b6366feff945730f1205d082b7d4943719ed395154f8fe162ead3085ada0f",
+      "GroupInfo": "069be9b608d1128e5217d0144d6791d58aa9e1f33d5e1b6f0cbd8d2c0ccd06bf",
+      "SubGroupInfo": "5410836e3eeff351fb51891c4276969611b2100cedf97271130dc3284de8812a",
+      "NodeCapabilityInfo": "3e7b679eed10edce1a8f62f7c29b67b39b0d377b787691a5d47ab884153804b7",
+      "ListGroupUsersResponse": "84110d748214119ee594920c2f5708864283408791b0bdb0d4fe70cd5b7cd6c9",
+      "GroupUserInfo": "e071b78334bc0ceae7eacd68807f90d38ca4350ba2c9b819faf0e5b779e20706",
+      "ListSharingRequestsResponse": "07598480450c4a8099e18ecb221833d77084a89630b89b785cecf0e80f6e83a1",
+      "SharingRequestInfo": "f97b50c2f12a072500d2acc5870ffc8af11eda222b667f3bed143eb93c54bdef",
+      "CreateSharingRequestRequest": "27ee82d40ae781b841cbda7ef160e6db5a5797fc27b1b8fd64261dbdc522c46e",
+      "APIStatusMessage": "2d9389fd413dd30152e0e565cdc0b9fedbba342f7b5983973d572fcef4cb7871",
+      "SuccessResponse": "2d9389fd413dd30152e0e565cdc0b9fedbba342f7b5983973d572fcef4cb7871",
+      "CreateSubgroupResponse": "c202a9c7e2a1245461638f18996b9ae0790e608d4d5fe610f119f979876592b8",
+      "NodeConfig": "3aef5c0e95f562b56f5c9669a624a7d39ec582d899c138616e92ae340d532cf2",
+      "ApiError": "2d9389fd413dd30152e0e565cdc0b9fedbba342f7b5983973d572fcef4cb7871",
+      "Automation": "c49cc94657d1e38306bc61de4243687c8e877eb16907df850480f7a590480e90",
+      "AutomationPayload": "338fcee6a222546fc4d2a1165b35b21fb4fc076886a4ce4e03ec2c1886201683",
+      "AutomationWriteResponse": "3f40b0fdeecbd01f89d35fa0e7ba03299605f4bbb525d3bcf86a5b1da7155257",
+      "ListAutomationsResponse": "c2fd0433e3ffa9cd42669d335bb258efcbace33e84ee2b14818e13036c8973a5",
+      "ListPublicIntegrationsResponse": "b468c1560f98411ae973049827b867b320c7971168e511b2eeaeb1127416a878",
+      "RegisterEndpointRequest": "493b5df6018972e6a510c2162dda5ecf594af958b44235966ab8dcbca11dbcd6",
+      "RegisterEndpointResponse": "cae68b0d2ab1c4d9fb043b22bffb0c8b065d071669c5f7611d9b73cb0e1e385c",
+      "TimeseriesRawDataResponse": "2c777f1807f8f3d8b28da9ade8b93e235872f2a6aaff3dde6b7eeb6f75ac12e9",
+      "TimeseriesLatestDataResponse": "a97aac3314ae8fa88ab2ba61777c6e9854bf925ea743a80296f7d55123a16842",
+      "TimeseriesAggregatesResponse": "b438c36871379b2fb3e357c8fc58d974bb177ba3855941c351297e58659a26f3",
+      "CreateSharingRequestResponse": "768b816a89b3b32ac53eed8616bb30724640c6cf11f93fffc51f2a297ef01a23"
+    },
+    "User_Api_Swagger.yaml": {
+      "SigninRequest": "406a07da7ae7446f75eca7c1507ca562d307f5661fc8cc0acf6d854e860c42c4",
+      "SigninResponse": "d1cb169301d65d34cb3facae93bc69e42d536598818f53e361bf158380274bd8",
+      "SignupRequest": "376ec8fda1c4a1bbb3b882edf79f0f0d349e2f4660a8e31a81dba1fd75dfa627",
+      "VerifySignupResponse": "d803b8cd6aef950bd59c7467fe8ce4d612d0730f5b0270a521b792f7ef6e4550",
+      "ForgotPasswordResponse": "d803b8cd6aef950bd59c7467fe8ce4d612d0730f5b0270a521b792f7ef6e4550",
+      "ChangePasswordResponse": "d803b8cd6aef950bd59c7467fe8ce4d612d0730f5b0270a521b792f7ef6e4550",
+      "GetUserResponse": "fe7d5ffbba58657dadc2fa6c59f88719f7826661817d8db1d84302b7386877fd",
+      "UserApiError": "d803b8cd6aef950bd59c7467fe8ce4d612d0730f5b0270a521b792f7ef6e4550",
+      "SignupResponse": "69532f3942ac1cb97725146dbf995cf1e9792f0c23b2d63a25059d65cc0bbe42"
+    },
+    "MQTT_User.yaml": {
+      "shadowDocument": "36c1ada82aa51f5543107c2e25431229c20739c4207a67ca6bdb544fe378e897"
+    },
+    "Push_User.yaml": {
+      "EventData": "72e85597f99b7eb5065d1a906d74d44af18cc0f65a9a7011e93042febe37066d",
+      "ApnsPayload": "a5419e7fb038066f2ee644d3a0146271c45dbca9c09c1e865f2c8a4c7da2bcc3",
+      "Aps": "cfd382f6f6b2e63d3fa3be3a71dcfa60f2693fb86c86535806c04ceb277e6e67",
+      "FcmPayload": "fbdfce44e6b4cc8b57a9f36aecf84dd954e38e3f62f43cdf86fe28d99bda58ea",
+      "FcmData": "54c0438cfcd5f391f33a99a08b61078318b8d6d82f3cf4e40e925664159a0676"
+    }
+  },
+  "fingerprintsGeneratedAt": "2026-08-04T10:36:39.767Z"
+}
