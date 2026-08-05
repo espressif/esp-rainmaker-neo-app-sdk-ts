@@ -37,7 +37,8 @@ info:
     Google Voice Assistant).
   termsOfService: http://swagger.io/terms/
   contact:
-    email: esp-rainmaker-admin@espressif.com
+    email: esp-rainmaker-support@espressif.com
+    url: https://rainmaker.espressif.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -65,8 +66,8 @@ servers:
 tags:
   - name: User Credentials
     description:
-      Exchange the login's token pair for temporary AWS credentials used to
-      sign every other (sigv4) call. Mandatory step right after login.
+      Exchange the login's token pair for temporary AWS credentials used to sign
+      every other (sigv4) call. Mandatory step right after login.
   - name: Role Assumption
     description:
       Step up to credentials scoped to a specific group, or to the IoT-user role
@@ -108,9 +109,9 @@ tags:
     description:
       Cloud-signed node onboarding - reserve a server-assigned node ID for a
       device MAC, then exchange a CSR for a certificate signed by the
-      deployment's claiming CA. Present only on deployments that enable
-      claiming (indicated by the rmng-claim-core AssistedClaiming output being
-      present in the published outputs).
+      deployment's claiming CA. Present only on deployments that enable claiming
+      (indicated by the rmng-claim-core AssistedClaiming output being present in
+      the published outputs).
   # --- Admin surface below ---
   - name: Node Administration
     description:
@@ -688,8 +689,8 @@ paths:
                 id_token:
                   type: string
                   description:
-                    ID token from the same sign-in as the access token in
-                    the Authorization header.
+                    ID token from the same sign-in as the access token in the
+                    Authorization header.
               required:
                 - id_token
       responses:
@@ -1487,7 +1488,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/AddGroupCapabilitiesResponse"
         "400":
-          description: Missing or unknown capabilities, or group not found / not accessible / not owned by the caller
+          description:
+            Missing or unknown capabilities, or group not found / not accessible
+            / not owned by the caller
           content:
             application/json:
               schema:
@@ -1670,7 +1673,8 @@ paths:
                     type: string
               example:
                 request_id: 1c9b2f4e-6a3d-4c8b-9e2f-7d5a1b3c4d5e
-                message: Invite sent if the user is registered with ESP RainMaker Neo
+                message:
+                  Invite sent if the user is registered with ESP RainMaker Neo
         "400":
           $ref: "#/components/responses/BadRequest"
         "500":
@@ -1716,7 +1720,8 @@ paths:
                     type: string
               example:
                 request_id: 1c9b2f4e-6a3d-4c8b-9e2f-7d5a1b3c4d5e
-                message: Invite sent if the user is registered with ESP RainMaker Neo
+                message:
+                  Invite sent if the user is registered with ESP RainMaker Neo
         "400":
           $ref: "#/components/responses/BadRequest"
         "500":
@@ -2538,14 +2543,16 @@ paths:
               APNS:
                 summary: APNS (iOS production)
                 value:
-                  authentication_key: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+                  authentication_key:
+                    "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
                   key_id: "<10 char Apple Key ID>"
                   team_id: "<10 char Apple Team ID>"
                   bundle_id: "com.company.app"
               APNS_SANDBOX:
                 summary: APNS (iOS sandbox)
                 value:
-                  authentication_key: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+                  authentication_key:
+                    "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
                   key_id: "<10 char Apple Key ID>"
                   team_id: "<10 char Apple Team ID>"
                   bundle_id: "com.company.app"
@@ -2556,7 +2563,9 @@ paths:
                   type: "service_account"
                   project_id: "your-fcm-project-id"
                   private_key_id: "abc123def456"
-                  private_key: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+                  private_key:
+                    "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE
+                    KEY-----\n"
                   client_email: "firebase-adminsdk-xyzyour-fcm-project-id.iam.gserviceaccount.com"
                   client_id: "104567890123456789012"
                   auth_uri: "https://accounts.google.com/o/oauth2/auth"
@@ -2581,7 +2590,9 @@ paths:
                   type: "service_account"
                   project_id: "your-gva-project-id"
                   private_key_id: "abc123def456789"
-                  private_key: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+                  private_key:
+                    "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE
+                    KEY-----\n"
                   client_email: "homegraph-sa@your-gva-project-id.iam.gserviceaccount.com"
                   client_id: "104567890123456789012"
                   auth_uri: "https://accounts.google.com/o/oauth2/auth"
@@ -2740,7 +2751,8 @@ paths:
                   with the corresponding new `.p8` material; `team_id` and
                   `bundle_id` stay the same.
                 value:
-                  authentication_key: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+                  authentication_key:
+                    "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
                   key_id: "<10 char Apple Key ID>"
                   team_id: "<10 char Apple Team ID>"
                   bundle_id: "com.company.app"
@@ -2754,7 +2766,9 @@ paths:
                   type: "service_account"
                   project_id: "your-fcm-project-id"
                   private_key_id: "rotated_xyz789"
-                  private_key: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+                  private_key:
+                    "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE
+                    KEY-----\n"
                   client_email: "firebase-adminsdk-xyz@your-prod-12345.iam.gserviceaccount.com"
                   client_id: "104567890123456789012"
                   auth_uri: "https://accounts.google.com/o/oauth2/auth"
@@ -2783,7 +2797,9 @@ paths:
                   type: "service_account"
                   project_id: "your-gva-project-id"
                   private_key_id: "rotated_xyz987"
-                  private_key: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+                  private_key:
+                    "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE
+                    KEY-----\n"
                   client_email: "homegraph-sa@your-gva-prod.iam.gserviceaccount.com"
                   client_id: "104567890123456789012"
                   auth_uri: "https://accounts.google.com/o/oauth2/auth"
@@ -3962,7 +3978,9 @@ components:
             PEM-encoded PKCS#10 certificate signing request. Must be ECDSA
             P-256, at most 8 KB, and carry a valid self-signature. Only its
             public key is used; the subject is discarded.
-          example: "-----BEGIN CERTIFICATE REQUEST-----\n...\n-----END CERTIFICATE REQUEST-----"
+          example:
+            "-----BEGIN CERTIFICATE REQUEST-----\n...\n-----END CERTIFICATE
+            REQUEST-----"
         capabilities:
           type: array
           items:
@@ -4057,7 +4075,8 @@ components:
           example: 30
         leaf_validity_years:
           type: integer
-          description: "Device (leaf) certificate lifetime in years. Default: 100."
+          description:
+            "Device (leaf) certificate lifetime in years. Default: 100."
           example: 10
 
     ClaimConfigResponse:
@@ -4838,12 +4857,13 @@ components:
           type: array
           items:
             type: string
-          description: OAuth redirect URIs registered on the voice-assistant OIDC client
+          description:
+            OAuth redirect URIs registered on the voice-assistant OIDC client
         manufacturer_name:
           type: string
           description:
-            Brand currently advertised in discovery — the configured value, or the
-            default brand when the deployment has set none. Never empty.
+            Brand currently advertised in discovery — the configured value, or
+            the default brand when the deployment has set none. Never empty.
           example: "Espressif"
         message:
           type: string

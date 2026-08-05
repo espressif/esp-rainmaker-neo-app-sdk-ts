@@ -5,7 +5,7 @@
 asyncapi: 3.1.0
 info:
   title: ESP RainMaker Neo Node MQTT API
-  version: "1.0.0"
+  version: "0.8.0"
   description: |
     MQTT API definitions for ESP RainMaker Neo platform for nodes.
 
@@ -32,7 +32,8 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   contact:
-    email: esp-rainmaker-admin@espressif.com
+    email: esp-rainmaker-support@espressif.com
+    url: https://rainmaker.espressif.com
 
 servers:
   production:
@@ -95,7 +96,9 @@ operations:
     action: receive
     channel:
       $ref: "#/channels/subgroupControlBroadcast"
-    summary: Node receives device-type-addressed control commands for a specific subgroup
+    summary:
+      Node receives device-type-addressed control commands for a specific
+      subgroup
 
   # ── Named shadow ───────────────────────────────────────────────────────────
   publishNamedShadowUpdate:
@@ -136,7 +139,8 @@ operations:
     action: send
     channel:
       $ref: "#/channels/namedShadowGet"
-    summary: Node requests the current named shadow document (response on get/accepted)
+    summary:
+      Node requests the current named shadow document (response on get/accepted)
 
   subscribeNamedShadowGetAccepted:
     action: receive
@@ -348,7 +352,9 @@ channels:
       shadowDelta:
         payload:
           type: object
-          description: "{ state, metadata, version, timestamp } — state carries the desired delta"
+          description:
+            "{ state, metadata, version, timestamp } — state carries the desired
+            delta"
           example: {}
 
   namedShadowUpdateAccepted:
@@ -365,7 +371,9 @@ channels:
       shadowAccepted:
         payload:
           type: object
-          description: "Full shadow document { state: { reported, desired }, metadata, version, timestamp }"
+          description:
+            "Full shadow document { state: { reported, desired }, metadata,
+            version, timestamp }"
           example: {}
 
   namedShadowUpdateRejected:
@@ -417,7 +425,9 @@ channels:
       shadowGetAccepted:
         payload:
           type: object
-          description: "Full shadow document { state: { reported, desired }, metadata, version, timestamp }"
+          description:
+            "Full shadow document { state: { reported, desired }, metadata,
+            version, timestamp }"
           example: {}
 
   indexedShadowUpdate:
@@ -943,7 +953,9 @@ components:
             Light:
               Power: true
               Brightness: 75
-        - name: Matter data model — command invocation (Endpoint 0x1, OnOff server cluster 0x6, toggle command 0x2)
+        - name:
+            Matter data model — command invocation (Endpoint 0x1, OnOff server
+            cluster 0x6, toggle command 0x2)
           payload:
             "0x1":
               c:
@@ -999,7 +1011,9 @@ components:
             "*":
               params:
                 esp.param.power: false
-        - name: Matter command — toggle OnOff on all applicable endpoints (wildcard endpoint 0xffff, cluster 0x6, command 0x2)
+        - name:
+            Matter command — toggle OnOff on all applicable endpoints (wildcard
+            endpoint 0xffff, cluster 0x6, command 0x2)
           payload:
             "0xffff":
               c:
@@ -1054,10 +1068,14 @@ components:
                             example: true
                           gva:
                             type: boolean
-                            description: Flag to dispatch Google Voice Assistant notification
+                            description:
+                              Flag to dispatch Google Voice Assistant
+                              notification
                             example: true
                           push:
-                            description: Flag to trigger mobile push (value ignored by backend)
+                            description:
+                              Flag to trigger mobile push (value ignored by
+                              backend)
                             example: true
                         additionalProperties:
                           description: |
@@ -1160,7 +1178,9 @@ components:
                         properties:
                           t:
                             type: object
-                            description: Tags set by the node (firmware updates this bucket)
+                            description:
+                              Tags set by the node (firmware updates this
+                              bucket)
                             additionalProperties: true
                             example:
                               type: "Light"
@@ -1168,7 +1188,9 @@ components:
                               fw_version: "2.1.0"
                   params:
                     type: object
-                    description: Only parameters with the `indexed` property in node configuration
+                    description:
+                      Only parameters with the `indexed` property in node
+                      configuration
                     additionalProperties: true
                     example:
                       Light:
@@ -1238,7 +1260,9 @@ components:
             example: false
           tz:
             type: string
-            description: Timezone identifier (IANA name, e.g. "UTC", "Asia/Kolkata") for timestamp context
+            description:
+              Timezone identifier (IANA name, e.g. "UTC", "Asia/Kolkata") for
+              timestamp context
             example: "Asia/Kolkata"
       examples:
         - name: Temperature reading (default — device.param)
@@ -1338,17 +1362,23 @@ components:
                   - id: "node~light-on"
                     value: false
         - name: Mobile push notification
-          summary: Flag-only key — triggers mobile push; value is ignored by the backend
+          summary:
+            Flag-only key — triggers mobile push; value is ignored by the
+            backend
           payload:
             notify:
               push: true
         - name: Node self factory-reset
-          summary: Flag-only key — node reports it reset itself; backend notifies group members and disassociates the node
+          summary:
+            Flag-only key — node reports it reset itself; backend notifies group
+            members and disassociates the node
           payload:
             notify:
               node_reset: true
         - name: Webhook notification
-          summary: Custom key `webhook_<platform>` routed to a configured webhook service
+          summary:
+            Custom key `webhook_<platform>` routed to a configured webhook
+            service
           payload:
             notify:
               webhook_mock:
@@ -1356,7 +1386,8 @@ components:
                 location: "front_door"
                 timestamp: 1743656583
         - name: Combined notification
-          summary: Multiple services triggered from a single notification publish
+          summary:
+            Multiple services triggered from a single notification publish
           payload:
             notify:
               automation:
@@ -1470,7 +1501,8 @@ components:
                 example: "AFR_OTA-ota_job_20240115"
               status:
                 type: string
-                enum: ["QUEUED", "IN_PROGRESS", "SUCCEEDED", "FAILED", "REJECTED"]
+                enum:
+                  ["QUEUED", "IN_PROGRESS", "SUCCEEDED", "FAILED", "REJECTED"]
                 example: "QUEUED"
               queuedAt:
                 type: integer
@@ -1605,7 +1637,9 @@ components:
                           example: "AA:BB:CC:DD:EE:FF"
             endpoints:
               type: object
-              description: Matter endpoints (matter data model only); keys are endpoint IDs in hex
+              description:
+                Matter endpoints (matter data model only); keys are endpoint IDs
+                in hex
               additionalProperties:
                 type: object
                 properties:
@@ -1671,13 +1705,15 @@ components:
 
         `i` (indexed) and `ts` (timeseries) are independent property sets and
         may overlap — an attribute that is both indexed and timeseries appears
-        in both arrays. `v` holds config-only attribute values (reported in
-        node config only, never in state). `a` lists the remaining plain
-        attribute IDs and is omitted when empty.
+        in both arrays. `v` holds config-only attribute values (reported in node
+        config only, never in state). `a` lists the remaining plain attribute
+        IDs and is omitted when empty.
       properties:
         a:
           type: array
-          description: Plain attribute IDs (hex) — not indexed, timeseries, or config-only. Omitted when empty.
+          description:
+            Plain attribute IDs (hex) — not indexed, timeseries, or config-only.
+            Omitted when empty.
           items:
             type: string
         e:
@@ -1959,7 +1995,8 @@ components:
                     description: Pre-signed S3 URL (Required if HTTP protocol)
                   auth_scheme:
                     type: string
-                    description: Authentication scheme (Required if HTTP protocol)
+                    description:
+                      Authentication scheme (Required if HTTP protocol)
                   sig-sha256-ecdsa:
                     type: string
                     description: ECDSA signature
@@ -1973,7 +2010,9 @@ components:
               description: Custom filetype identifier
             fw_version:
               type: string
-              description: Target firmware version (required if `min_fw_version` is present)
+              description:
+                Target firmware version (required if `min_fw_version` is
+                present)
               example: "2.1.0"
             min_fw_version:
               type: string

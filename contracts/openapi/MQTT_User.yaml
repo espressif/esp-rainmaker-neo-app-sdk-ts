@@ -5,7 +5,7 @@
 asyncapi: 3.1.0
 info:
   title: ESP RainMaker Neo User MQTT API
-  version: '1.0.0'
+  version: "0.8.0"
   description: |
     MQTT API definitions for ESP RainMaker Neo platform — **User (mobile app / web client) perspective**.
 
@@ -44,64 +44,69 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   contact:
-    email: esp-rainmaker-admin@espressif.com
+    email: esp-rainmaker-support@espressif.com
+    url: https://rainmaker.espressif.com
 
 servers:
   production:
-    host: '{iot-endpoint}-ats.iot.{region}.amazonaws.com'
+    host: "{iot-endpoint}-ats.iot.{region}.amazonaws.com"
     protocol: mqtt
     description: AWS IoT Core endpoint (WebSocket + SigV4 authentication)
     security:
-      - $ref: '#/components/securitySchemes/cognitoSigV4'
+      - $ref: "#/components/securitySchemes/cognitoSigV4"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # OPERATIONS
 # ──────────────────────────────────────────────────────────────────────────────
 operations:
-
   # ── Device control (unicast) ───────────────────────────────────────────────
   publishDeviceControl:
     action: send
     channel:
-      $ref: '#/channels/deviceControl'
+      $ref: "#/channels/deviceControl"
     summary: User sends parameter control commands to a specific device
 
   # ── Group / subgroup control (addressed by device type) ────────────────────
   publishGroupControlBroadcast:
     action: send
     channel:
-      $ref: '#/channels/groupControlBroadcast'
-    summary: User sends device-type-addressed control commands to all devices in a group
+      $ref: "#/channels/groupControlBroadcast"
+    summary:
+      User sends device-type-addressed control commands to all devices in a
+      group
 
   publishSubgroupControlBroadcast:
     action: send
     channel:
-      $ref: '#/channels/subgroupControlBroadcast'
-    summary: User sends device-type-addressed control commands to all devices in a subgroup
+      $ref: "#/channels/subgroupControlBroadcast"
+    summary:
+      User sends device-type-addressed control commands to all devices in a
+      subgroup
 
   # ── Shadow state subscriptions ─────────────────────────────────────────────
   subscribeShadowUpdate:
     action: receive
     channel:
-      $ref: '#/channels/shadowUpdateDocuments'
-    summary: User receives real-time device state changes (shadow update documents)
+      $ref: "#/channels/shadowUpdateDocuments"
+    summary:
+      User receives real-time device state changes (shadow update documents)
 
   subscribeShadowDelta:
     action: receive
     channel:
-      $ref: '#/channels/shadowDelta'
+      $ref: "#/channels/shadowDelta"
     summary: User receives shadow delta (desired vs. reported difference)
 
   subscribeShadowUpdateAccepted:
     action: receive
     channel:
-      $ref: '#/channels/shadowUpdateAccepted'
+      $ref: "#/channels/shadowUpdateAccepted"
     summary: User receives confirmation that a shadow update was accepted
 
   subscribeShadowUpdateRejected:
     action: receive
     channel:
-      $ref: '#/channels/shadowUpdateRejected'
+      $ref: "#/channels/shadowUpdateRejected"
     summary: User receives rejection of a shadow update
 
   # The subscribe topics above only fire on subsequent changes; to read the
@@ -110,121 +115,121 @@ operations:
   publishShadowGet:
     action: send
     channel:
-      $ref: '#/channels/shadowGet'
-    summary: User requests the current shadow document (response on get/accepted)
+      $ref: "#/channels/shadowGet"
+    summary:
+      User requests the current shadow document (response on get/accepted)
 
   subscribeShadowGetAccepted:
     action: receive
     channel:
-      $ref: '#/channels/shadowGetAccepted'
+      $ref: "#/channels/shadowGetAccepted"
     summary: User receives the current shadow document in response to a get
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CHANNELS
 # ──────────────────────────────────────────────────────────────────────────────
 channels:
-
   # ── Device control (unicast) ───────────────────────────────────────────────
   deviceControl:
-    address: 'rainmaker/nodes/{nodeId}/user/{shadowName}/params'
+    address: "rainmaker/nodes/{nodeId}/user/{shadowName}/params"
     description: |
       **[User → Device]** Send parameter control commands to a specific device.
     parameters:
       nodeId:
-        $ref: '#/components/parameters/nodeId'
+        $ref: "#/components/parameters/nodeId"
       shadowName:
-        $ref: '#/components/parameters/shadowName'
+        $ref: "#/components/parameters/shadowName"
     messages:
       controlCommand:
-        $ref: '#/components/messages/paramControlMessage'
+        $ref: "#/components/messages/paramControlMessage"
 
   # ── Group / subgroup control (addressed by device type) ────────────────────
   groupControlBroadcast:
-    address: 'rainmaker/nodes/groups/{groupId}/control'
+    address: "rainmaker/nodes/groups/{groupId}/control"
     description: |
       **[User → All devices in group]** Device-type-addressed control commands.
       Each receiving node applies the payload only to its own devices whose type
       matches a top-level key.
     parameters:
       groupId:
-        $ref: '#/components/parameters/groupId'
+        $ref: "#/components/parameters/groupId"
     messages:
       groupControl:
-        $ref: '#/components/messages/groupControlMessage'
+        $ref: "#/components/messages/groupControlMessage"
 
   subgroupControlBroadcast:
-    address: 'rainmaker/nodes/groups/{groupId}/subgroups/{subgroupId}/control'
+    address: "rainmaker/nodes/groups/{groupId}/subgroups/{subgroupId}/control"
     description: |
       **[User → All devices in subgroup]** Device-type-addressed control commands
       for one specific subgroup. Same payload shape as the group-level
       `groupControlBroadcast` channel.
     parameters:
       groupId:
-        $ref: '#/components/parameters/groupId'
+        $ref: "#/components/parameters/groupId"
       subgroupId:
-        $ref: '#/components/parameters/subgroupId'
+        $ref: "#/components/parameters/subgroupId"
     messages:
       subgroupControl:
-        $ref: '#/components/messages/groupControlMessage'
+        $ref: "#/components/messages/groupControlMessage"
 
   # ── Shadow subscriptions (state updates) ───────────────────────────────────
   shadowUpdateDocuments:
-    address: '$aws/things/{nodeId}/shadow/name/{shadowName}/update/documents'
+    address: "$aws/things/{nodeId}/shadow/name/{shadowName}/update/documents"
     description: |
       **[Shadow → User]** Full shadow document on every state change.
       Contains both `current` and `previous` state. User subscribes to receive
       real-time state updates from devices.
     parameters:
       nodeId:
-        $ref: '#/components/parameters/nodeId'
+        $ref: "#/components/parameters/nodeId"
       shadowName:
-        $ref: '#/components/parameters/shadowName'
+        $ref: "#/components/parameters/shadowName"
     messages:
       shadowDocuments:
-        $ref: '#/components/messages/shadowUpdateDocumentsMessage'
+        $ref: "#/components/messages/shadowUpdateDocumentsMessage"
 
   shadowDelta:
-    address: '$aws/things/{nodeId}/shadow/name/{shadowName}/update/delta'
+    address: "$aws/things/{nodeId}/shadow/name/{shadowName}/update/delta"
     description: |
       **[Shadow → User]** Shadow delta — contains only the difference between
       desired and reported state. Useful for tracking pending commands.
     parameters:
       nodeId:
-        $ref: '#/components/parameters/nodeId'
+        $ref: "#/components/parameters/nodeId"
       shadowName:
-        $ref: '#/components/parameters/shadowName'
+        $ref: "#/components/parameters/shadowName"
     messages:
       delta:
-        $ref: '#/components/messages/shadowDeltaMessage'
+        $ref: "#/components/messages/shadowDeltaMessage"
 
   shadowUpdateAccepted:
-    address: '$aws/things/{nodeId}/shadow/name/{shadowName}/update/accepted'
+    address: "$aws/things/{nodeId}/shadow/name/{shadowName}/update/accepted"
     description: |
       **[Shadow → User]** Confirmation that a shadow update was accepted by AWS IoT.
     parameters:
       nodeId:
-        $ref: '#/components/parameters/nodeId'
+        $ref: "#/components/parameters/nodeId"
       shadowName:
-        $ref: '#/components/parameters/shadowName'
+        $ref: "#/components/parameters/shadowName"
     messages:
       accepted:
-        $ref: '#/components/messages/shadowUpdateAcceptedMessage'
+        $ref: "#/components/messages/shadowUpdateAcceptedMessage"
 
   shadowUpdateRejected:
-    address: '$aws/things/{nodeId}/shadow/name/{shadowName}/update/rejected'
+    address: "$aws/things/{nodeId}/shadow/name/{shadowName}/update/rejected"
     description: |
       **[Shadow → User]** Rejection of a shadow update (e.g. version conflict).
     parameters:
       nodeId:
-        $ref: '#/components/parameters/nodeId'
+        $ref: "#/components/parameters/nodeId"
       shadowName:
-        $ref: '#/components/parameters/shadowName'
+        $ref: "#/components/parameters/shadowName"
     messages:
       rejected:
-        $ref: '#/components/messages/shadowUpdateRejectedMessage'
+        $ref: "#/components/messages/shadowUpdateRejectedMessage"
 
   shadowGet:
-    address: '$aws/things/{nodeId}/shadow/name/{shadowName}/get'
+    address: "$aws/things/{nodeId}/shadow/name/{shadowName}/get"
     description: |
       **[User → Shadow]** Request the current shadow document, e.g. to fetch
       device state on connect or app resume. The document is returned on
@@ -232,9 +237,9 @@ channels:
       changes, so this round-trip is how an app reads current state.
     parameters:
       nodeId:
-        $ref: '#/components/parameters/nodeId'
+        $ref: "#/components/parameters/nodeId"
       shadowName:
-        $ref: '#/components/parameters/shadowName'
+        $ref: "#/components/parameters/shadowName"
     messages:
       get:
         payload:
@@ -243,30 +248,30 @@ channels:
           example: {}
 
   shadowGetAccepted:
-    address: '$aws/things/{nodeId}/shadow/name/{shadowName}/get/accepted'
+    address: "$aws/things/{nodeId}/shadow/name/{shadowName}/get/accepted"
     description: |
       **[Shadow → User]** Current shadow document returned in response to a get.
     parameters:
       nodeId:
-        $ref: '#/components/parameters/nodeId'
+        $ref: "#/components/parameters/nodeId"
       shadowName:
-        $ref: '#/components/parameters/shadowName'
+        $ref: "#/components/parameters/shadowName"
     messages:
       getAccepted:
-        $ref: '#/components/messages/shadowUpdateAcceptedMessage'
+        $ref: "#/components/messages/shadowUpdateAcceptedMessage"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # COMPONENTS
 # ──────────────────────────────────────────────────────────────────────────────
 components:
-
   # ── Messages ───────────────────────────────────────────────────────────────
   messages:
-
     # ── Parameter control (device-name addressed) ───────────────────────────
     paramControlMessage:
       name: ParamControl
-      summary: Parameter update command sent by user to device(s) — device-name addressed
+      summary:
+        Parameter update command sent by user to device(s) — device-name
+        addressed
       description: |
         Same format for unicast and group params broadcast.
 
@@ -294,7 +299,9 @@ components:
             Thermostat:
               Temperature: 22.5
               Mode: "cool"
-        - name: Matter command — toggle on/off (Endpoint 0x1, OnOff server cluster 0x6, toggle command 0x2)
+        - name:
+            Matter command — toggle on/off (Endpoint 0x1, OnOff server cluster
+            0x6, toggle command 0x2)
           payload:
             "0x1":
               c:
@@ -350,7 +357,9 @@ components:
             "*":
               params:
                 esp.param.power: false
-        - name: Matter command — toggle OnOff on all applicable endpoints (wildcard endpoint 0xffff, cluster 0x6, command 0x2)
+        - name:
+            Matter command — toggle OnOff on all applicable endpoints (wildcard
+            endpoint 0xffff, cluster 0x6, command 0x2)
           payload:
             "0xffff":
               c:
@@ -370,9 +379,9 @@ components:
         type: object
         properties:
           previous:
-            $ref: '#/components/schemas/shadowDocument'
+            $ref: "#/components/schemas/shadowDocument"
           current:
-            $ref: '#/components/schemas/shadowDocument'
+            $ref: "#/components/schemas/shadowDocument"
           timestamp:
             type: integer
             description: Unix timestamp (seconds)
@@ -475,7 +484,6 @@ components:
 
   # ── Schemas ────────────────────────────────────────────────────────────────
   schemas:
-
     shadowDocument:
       type: object
       description: AWS IoT Shadow document structure
@@ -506,7 +514,9 @@ components:
                       alexa: true
                 online:
                   type: boolean
-                  description: Whether device has completed initialization and is ready for commands
+                  description:
+                    Whether device has completed initialization and is ready for
+                    commands
                   example: true
                 ncfg_ver:
                   type: integer

@@ -100,10 +100,7 @@ import { ESPRMNeoBase } from "@espressif/rainmaker-neo-base-sdk";
 ESPRMNeoBase.init({
   baseUrl: "https://your-api-gateway.amazonaws.com/prod",
   userApiBase: "https://your-user-api-gateway.amazonaws.com/prod",
-  identityId: "your-identity-pool-id",
   awsRegion: "us-east-1",
-  userPoolId: "your-user-pool-id",
-  clientId: "your-cognito-client-id",
   iotEndpoint: "xxxxxxxx-ats.iot.us-east-1.amazonaws.com",
   // Optional adapters (provided by your app):
   // mqttAdapter, customStorageAdapter, provisionAdapter, ...
@@ -221,7 +218,9 @@ await device.disconnect();
 
 ## API Documentation
 
-Generate local docs from JSDoc:
+Browse the hosted API reference at [https://espressif.github.io/esp-rainmaker-neo-app-sdk-ts/](https://espressif.github.io/esp-rainmaker-neo-app-sdk-ts/).
+
+To generate local docs from JSDoc:
 
 ```bash
 npm run genDocs
