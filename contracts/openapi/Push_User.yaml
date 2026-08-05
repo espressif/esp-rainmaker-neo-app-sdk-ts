@@ -5,7 +5,7 @@
 asyncapi: 3.1.0
 info:
   title: ESP RainMaker Neo Push Notification Payloads
-  version: '1.0.0'
+  version: "0.8.0"
   description: |
     Push-notification **payload** definitions for ESP RainMaker Neo, from the mobile app's
     perspective: the provider-native JSON the device receives, by
@@ -30,11 +30,12 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   contact:
-    email: esp-rainmaker-admin@espressif.com
+    email: esp-rainmaker-support@espressif.com
+    url: https://rainmaker.espressif.com
 
 servers:
   sns:
-    host: 'sns.{region}.amazonaws.com'
+    host: "sns.{region}.amazonaws.com"
     protocol: https
     description: |
       AWS SNS. ESP RainMaker Neo publishes one formatted payload per provider to the
@@ -43,60 +44,60 @@ servers:
       server ESP RainMaker Neo contacts; the provider gateways are reached by SNS, not directly.
     variables:
       region:
-        default: 'eu-west-1'
+        default: "eu-west-1"
         description: AWS region of the ESP RainMaker Neo deployment.
 
 # ──────────────────────────────────────────────────────────────────────────────
 # OPERATIONS
 # ──────────────────────────────────────────────────────────────────────────────
 operations:
-
   receiveApnsPush:
     action: receive
     channel:
-      $ref: '#/channels/apnsPush'
+      $ref: "#/channels/apnsPush"
 
   receiveFcmPush:
     action: receive
     channel:
-      $ref: '#/channels/fcmPush'
+      $ref: "#/channels/fcmPush"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CHANNELS
 # ──────────────────────────────────────────────────────────────────────────────
 channels:
-
   apnsPush:
     address: null
     servers:
-      - $ref: '#/servers/sns'
-    description: APNS payload, delivered to devices registered against an `apns` or `apns_sandbox` integration (the payload is identical for both).
+      - $ref: "#/servers/sns"
+    description:
+      APNS payload, delivered to devices registered against an `apns` or
+      `apns_sandbox` integration (the payload is identical for both).
     messages:
       apnsNotification:
-        $ref: '#/components/messages/apnsNotification'
+        $ref: "#/components/messages/apnsNotification"
 
   fcmPush:
     address: null
     servers:
-      - $ref: '#/servers/sns'
-    description: FCM (GCM) payload, delivered to devices registered against a `gcm` integration.
+      - $ref: "#/servers/sns"
+    description:
+      FCM (GCM) payload, delivered to devices registered against a `gcm`
+      integration.
     messages:
       fcmNotification:
-        $ref: '#/components/messages/fcmNotification'
+        $ref: "#/components/messages/fcmNotification"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # COMPONENTS
 # ──────────────────────────────────────────────────────────────────────────────
 components:
-
   messages:
-
     apnsNotification:
       name: apnsNotification
       title: APNS / APNS_SANDBOX notification
       contentType: application/json
       payload:
-        $ref: '#/components/schemas/ApnsPayload'
+        $ref: "#/components/schemas/ApnsPayload"
       # One entry per event type. Add a new entry when a new event ships.
       examples:
         - name: node_alert
@@ -135,7 +136,7 @@ components:
       title: FCM (GCM) notification
       contentType: application/json
       payload:
-        $ref: '#/components/schemas/FcmPayload'
+        $ref: "#/components/schemas/FcmPayload"
       # One entry per event type. Add a new entry when a new event ships.
       examples:
         - name: node_alert
@@ -164,11 +165,12 @@ components:
                 data: {}
 
   schemas:
-
     EventData:
       type: object
       title: event_data
-      description: ESP RainMaker Neo event fields. APNS carries this at the top level; FCM nests it under `data.event_data`.
+      description:
+        ESP RainMaker Neo event fields. APNS carries this at the top level; FCM
+        nests it under `data.event_data`.
       required: [type, ts, data]
       properties:
         type:
@@ -193,7 +195,9 @@ components:
           example: "ABCDEF1234567890.node.alert"
         uuid:
           type: string
-          description: Optional, test-only correlation id (set when `mock_random` is configured).
+          description:
+            Optional, test-only correlation id (set when `mock_random` is
+            configured).
           example: "5f3c…_APNS"
 
     ApnsPayload:
@@ -202,9 +206,9 @@ components:
       required: [aps, event_data]
       properties:
         aps:
-          $ref: '#/components/schemas/Aps'
+          $ref: "#/components/schemas/Aps"
         event_data:
-          $ref: '#/components/schemas/EventData'
+          $ref: "#/components/schemas/EventData"
 
     Aps:
       type: object
@@ -228,7 +232,9 @@ components:
         mutable-content:
           type: integer
           enum: [1]
-          description: Always `1`; lets the app's Notification Service Extension mutate the payload.
+          description:
+            Always `1`; lets the app's Notification Service Extension mutate the
+            payload.
           example: 1
         category:
           type: string
@@ -242,11 +248,12 @@ components:
     FcmPayload:
       type: object
       title: FCM payload
-      description: A **data message** (no FCM `notification` block), rendered by the app.
+      description:
+        A **data message** (no FCM `notification` block), rendered by the app.
       required: [data]
       properties:
         data:
-          $ref: '#/components/schemas/FcmData'
+          $ref: "#/components/schemas/FcmData"
         android:
           type: object
           description: |
@@ -270,5 +277,4 @@ components:
           type: string
           example: "Node ABCDEF1234567890 has an alert!"
         event_data:
-          $ref: '#/components/schemas/EventData'
-
+          $ref: "#/components/schemas/EventData"

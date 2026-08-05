@@ -5,17 +5,16 @@
 openapi: 3.0.0
 info:
   title: ESP RainMaker Neo Auth & Accounts API
-  version: 1.0.0
+  version: 0.8.0
   description: |
     Sign-in and account management for the ESP RainMaker Neo cloud.
     Anything that produces or rotates an access token lives here; once
     you have a token, the rest of the platform lives in the
-    **ESP RainMaker Neo Platform API** (`Api_Swagger.yaml`).
+    **ESP RainMaker Neo Platform API**
 
     ESP User is the platform's own OAuth 2.1 / OIDC issuer: every token a client
     holds is minted here, regardless of how the user proved their identity.
-    Admins authenticate directly against their AWS Cognito user pool (no
-    admin-auth API here).
+    Admins authenticate directly against their AWS Cognito user pool.
 
     Login methods (all end in OUR tokens; upstream credentials never reach clients):
 
@@ -25,14 +24,12 @@ info:
       broker exchanges the upstream code server-side and issues OUR authorization
       code at the client's `redirect_uri`.
     - **Native password APIs** (`/v1/user/auth/*`): the main-era
-      native surface, kept fully compatible for existing apps. Credentials are
-      verified against the bundled Cognito pool server-side and converted to OUR
-      tokens.
+      native surface. Credentials are verified against the bundled Cognito pool server-side and converted to our tokens.
 
     Token lifecycle after login:
 
     1. `POST /oauth2/token` (`grant_type=refresh_token`) - rotate the token set
-       (legacy `/v1/user/auth/token/refresh` is reuse-tolerant instead).
+       (native `/v1/user/auth/token/refresh` is reuse-tolerant instead).
     2. Send `access_token` as a `Bearer` `Authorization` header on subsequent
        calls. To call the platform API you must first exchange the token for AWS
        credentials at `POST /v1/user/credentials` and SigV4-sign every request.
@@ -41,7 +38,8 @@ info:
        must come from the same sign-in.
   termsOfService: http://swagger.io/terms/
   contact:
-    email: esp-rainmaker-admin@espressif.com
+    email: esp-rainmaker-support@espressif.com
+    url: https://rainmaker.espressif.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -85,7 +83,8 @@ tags:
   - name: Admin Clients
     description: Superadmin-only OAuth client registry
   - name: Admin Creds
-    description: Scoped AWS credentials the dashboard uses to run seevral admin steps
+    description:
+      Scoped AWS credentials the dashboard uses to run seevral admin steps
 
 paths:
   # ==========================================
@@ -141,7 +140,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JWKS"
-
 
   /oauth2/authorize:
     get:
@@ -575,7 +573,9 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Verification code sent. Existing RainMaker users should log in instead
+                    example:
+                      Verification code sent. Existing RainMaker users should
+                      log in instead
         "400":
           $ref: "#/components/responses/BadRequest"
 
@@ -695,20 +695,20 @@ paths:
                 new_password:
                   type: string
       responses:
-        '200':
+        "200":
           description: Password changed.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '400':
+                $ref: "#/components/schemas/Error"
+        "400":
           description: Missing field.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /v1/user/auth/signout:
     post:
@@ -735,12 +735,14 @@ paths:
                   type: string
                 global:
                   type: string
-                  description: Accepted for compatibility; `"true"` is rejected with `400`.
+                  description:
+                    Accepted for compatibility; `"true"` is rejected with `400`.
       responses:
         "200":
           description: Signed out.
         "400":
-          description: Refresh token missing, or an all-devices signout was requested.
+          description:
+            Refresh token missing, or an all-devices signout was requested.
           content:
             application/json:
               schema:
@@ -924,7 +926,6 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-
   /v1/admin/credentials:
     post:
       summary: Get espuser-scoped AWS credentials (superadmin)
@@ -965,8 +966,10 @@ components:
         session_suffix:
           type: string
           maxLength: 32
-          pattern: '^[a-zA-Z0-9]*$'
-          description: Optional alphanumeric suffix appended to the STS role session name, so concurrent admin sessions are distinguishable in CloudTrail.
+          pattern: "^[a-zA-Z0-9]*$"
+          description:
+            Optional alphanumeric suffix appended to the STS role session name,
+            so concurrent admin sessions are distinguishable in CloudTrail.
           example: "dash01"
     CredsResponse:
       type: object
@@ -987,7 +990,8 @@ components:
         expiration:
           type: integer
           nullable: true
-          description: Unix timestamp at which the credentials expire, 1 hour from now.
+          description:
+            Unix timestamp at which the credentials expire, 1 hour from now.
           example: 1767225600
     OpenIDConfiguration:
       type: object
@@ -1155,8 +1159,7 @@ components:
       properties:
         refresh_token:
           type: string
-          description:
-            Refresh token from this surface; spent once redeemed.
+          description: Refresh token from this surface; spent once redeemed.
 
     LegacySignupRequest:
       type: object
@@ -1329,7 +1332,9 @@ components:
       properties:
         user_id:
           type: string
-          description: The user's opaque identifier, minted by this issuer (the token `sub` claim).
+          description:
+            The user's opaque identifier, minted by this issuer (the token `sub`
+            claim).
           example: "8f3e9c1a-2b4d-4f6e-9a8c-1d2e3f4a5b6c"
         email:
           type: string
