@@ -39,7 +39,10 @@ ESPRMNeoNode.prototype.sync = async function (): Promise<ESPRMNeoNode> {
     // Apply first so a schema issue surfaces to the caller instead of
     // poisoning the storage cache for the next cold start.
     this.applyNodeConfig(config);
-    await writeLocalNodeConfig(this.nodeId, config);
+    await writeLocalNodeConfig(this.nodeId, {
+      ...config,
+      connectivity_status: this.connectivityStatus,
+    });
 
     return this;
   } catch (error) {

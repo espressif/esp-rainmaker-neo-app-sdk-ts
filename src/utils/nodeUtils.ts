@@ -39,7 +39,18 @@ export async function writeLocalNodeConfig(
   config: NodeConfigAPI
 ): Promise<void> {
   try {
-    await ESPRMNeoStorage.setNodeConfig(nodeId, config);
+    let toStore = config;
+    // Cloud config omits connectivity — keep the last cached status when writing.
+    if (!config.connectivity_status) {
+      const prev = await ESPRMNeoStorage.getNodeConfig(nodeId);
+      if (prev?.connectivity_status) {
+        toStore = {
+          ...config,
+          connectivity_status: prev.connectivity_status,
+        };
+      }
+    }
+    await ESPRMNeoStorage.setNodeConfig(nodeId, toStore);
   } catch (error) {
     logger.warn(`Cache write failed for ${nodeId}`, error);
   }
