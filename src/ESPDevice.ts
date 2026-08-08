@@ -31,6 +31,17 @@ export class ESPDevice implements ESPDeviceInterface {
   transport: string;
   security: number;
 
+  /**
+   * What a completed association produced, kept so `retryNetworkCredentials`
+   * can resume the flow instead of repeating it. Set once verification
+   * succeeds; `undefined` until then.
+   */
+  provisionResumeState?: {
+    nodeId: string;
+    groupId: string;
+    options?: Record<string, any>;
+  };
+
   constructor(deviceConfig: ESPDeviceInterface) {
     this.name = deviceConfig.name;
     this.transport = deviceConfig.transport;
