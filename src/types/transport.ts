@@ -23,10 +23,34 @@ enum ESPTransportMode {
 }
 
 /**
+ * Wire protocol spoken by the `local` transport. Both protocols run over a
+ * protocomm session on the node's LAN HTTP server; they differ in endpoint
+ * names and message encoding.
+ *
+ * Carried on the local transport config's `metadata.protocol`, set by local
+ * discovery from the mDNS service type that produced the hit.
+ */
+enum ESPLocalControlProtocol {
+  /**
+   * RainMaker Neo protocol (`rmaker_local_ctrl/*` session plus
+   * `get_params`/`set_params`/`get_config`), advertised as
+   * `_esp_rmaker_ctrl._tcp`. Default for this SDK.
+   */
+  rmakerLocalCtrl = "rmaker_local_ctrl",
+}
+
+/**
+ * Protocol assumed when a local transport config carries no explicit
+ * `metadata.protocol` — for example a LAN transport restored from a client-side
+ * registry rather than a fresh discovery hit.
+ */
+const DEFAULT_LOCAL_CONTROL_PROTOCOL = ESPLocalControlProtocol.rmakerLocalCtrl;
+
+/**
  * Configuration options for the transport mechanism for ESP communication.
  *
  * Includes the transport type and any additional metadata for the chosen mode
- * (e.g. `baseUrl`, `securityType`, `pop` for the local transport).
+ * (e.g. `baseUrl`, `securityType`, `pop`, `protocol` for the local transport).
  */
 interface ESPTransportConfig {
   /**
@@ -87,7 +111,9 @@ const DEFAULT_TRANSPORT_ORDER: (ESPTransportMode | string)[] = [
 
 export {
   ESPTransportMode,
+  ESPLocalControlProtocol,
   ESPTransportConfig,
   ESPTransportInterface,
   DEFAULT_TRANSPORT_ORDER,
+  DEFAULT_LOCAL_CONTROL_PROTOCOL,
 };
