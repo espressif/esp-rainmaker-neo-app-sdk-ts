@@ -29,6 +29,17 @@ export interface MQTTTransport {
   isConnected(): Promise<boolean>;
 
   /**
+   * Optional push notification when the transport connects or drops.
+   * Returns an unsubscribe function. Not required by NodeMQTTOrchestrator;
+   * adapters that omit it simply do not surface async status changes.
+   *
+   * @param callback - Invoked with `{ connected }` on status changes
+   */
+  onConnectionStatusChange?(
+    callback: (status: { connected: boolean }) => void
+  ): () => void;
+
+  /**
    * Publish a message to a topic.
    *
    * @param topic - MQTT topic to publish to

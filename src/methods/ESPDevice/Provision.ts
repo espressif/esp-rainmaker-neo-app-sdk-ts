@@ -170,6 +170,14 @@ async function runChallengeResponseFlow(
     node_id: nodeId,
   });
 
+  // Association is verified and cannot be repeated; remember what step 6 needs
+  // so `retryNetworkCredentials` can resume from the Wi-Fi step.
+  device.provisionResumeState = {
+    nodeId: nodeId!,
+    groupId,
+    options: options as Record<string, any> | undefined,
+  };
+
   // 5. SET NETWORK CREDENTIALS
   reportProgress(
     onProgress,

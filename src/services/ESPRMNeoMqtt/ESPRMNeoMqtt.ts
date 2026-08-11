@@ -103,6 +103,22 @@ export class ESPRMNeoMqtt implements MQTTTransport {
   }
 
   /**
+   * Registers a transport connection-status listener when the underlying
+   * adapter supports it; otherwise returns a no-op unsubscribe.
+   *
+   * @param callback - Invoked with `{ connected }` on status changes
+   * @returns Unsubscribe function
+   */
+  onConnectionStatusChange(
+    callback: (status: { connected: boolean }) => void
+  ): () => void {
+    if (typeof this.#adapter.onConnectionStatusChange === "function") {
+      return this.#adapter.onConnectionStatusChange(callback);
+    }
+    return () => {};
+  }
+
+  /**
    * Publish a message to a topic.
    *
    * @param topic - MQTT topic to publish to

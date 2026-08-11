@@ -66,6 +66,7 @@ describe("ESPRMNeoNode generic transport management", () => {
     const node = makeNode();
     node.nodeId = "n1";
     node.config = { node_id: "n1" } as ESPRMNeoNode["config"];
+    (node as any).wireConfig = { node_id: "n1", devices: [], services: [] };
 
     (node as any).processNodeUpdate({
       state: { reported: { online: true } },
