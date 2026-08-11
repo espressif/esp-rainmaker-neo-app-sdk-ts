@@ -6,7 +6,10 @@
 
 import { ESPDevice } from "../../src/ESPDevice";
 import { ESPRMNeoBase } from "../../src/ESPRMNeoBase";
-import { ESPProvisionAdapterInterface } from "../../src/types/provision";
+import {
+  ESPProvisionAdapterInterface,
+  ESPProvResponseStatus,
+} from "../../src/types/provision";
 
 // Load ESPDevice method extensions
 import "../../src/methods/ESPDevice";
@@ -489,6 +492,12 @@ describe("ESPDevice Comprehensive Tests", () => {
       );
       expect(onProgress).toHaveBeenCalled();
       expect(result).toBe("test-node-id");
+      // Successful association is recorded so retryNetworkCredentials can resume
+      expect(espDevice.provisionResumeState).toEqual({
+        nodeId: "test-node-id",
+        groupId,
+        options: undefined,
+      });
     });
 
     it("should throw error when provisioning fails", async () => {
@@ -509,6 +518,47 @@ describe("ESPDevice Comprehensive Tests", () => {
       await expect(
         espDevice.provision(ssid, passphrase, onProgress, groupId)
       ).rejects.toThrow("Provisioning failed");
+
+      // The failure happened after association was verified; resume state must
+      // survive so retryNetworkCredentials can pick up from the Wi-Fi step
+      expect(espDevice.provisionResumeState).toEqual(
+        expect.objectContaining({ nodeId: "test-node-id", groupId })
+      );
+    });
+
+    it("should resume with retryNetworkCredentials after a failed credential write", async () => {
+      const onProgress = jest.fn();
+      const mockSendDataResponse = Buffer.from([1, 2, 3, 4, 5]).toString(
+        "base64"
+      );
+      (mockProvisionAdapter.sendData as jest.Mock).mockResolvedValue(
+        mockSendDataResponse
+      );
+      (mockProvisionAdapter.provision as jest.Mock)
+        .mockRejectedValueOnce(new Error("Wrong password"))
+        .mockResolvedValueOnce(0);
+
+      await expect(
+        espDevice.provision("TestNetwork", "wrongpass", onProgress, "test-group-id")
+      ).rejects.toThrow("Wrong password");
+
+      const retryProgress = jest.fn();
+      const nodeId = await espDevice.retryNetworkCredentials(
+        "TestNetwork",
+        "rightpass",
+        retryProgress
+      );
+
+      expect(mockProvisionAdapter.provision).toHaveBeenLastCalledWith(
+        espDevice.name,
+        "TestNetwork",
+        "rightpass"
+      );
+      expect(nodeId).toBe("test-node-id");
+      expect(retryProgress).toHaveBeenLastCalledWith({
+        status: ESPProvResponseStatus.succeed,
+        description: "test-node-id",
+      });
     });
   });
 

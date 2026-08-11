@@ -197,8 +197,8 @@ export class NodeMQTTOrchestrator {
   /**
    * Registers a node with the orchestrator.
    * Must be called before subscribeToNode, getParams, getShadow, etc.
-   * On shadow rename: clears the old binding; ignores shorter/incomplete names.
-   * Shrink membership via {@link unregisterNode} first.
+   * On shadow rename: clears the old binding, then installs the new name
+   * (including shrinks to a shorter membership shadow).
    *
    * @param nodeId - The device/node identifier.
    * @param shadowName - The named shadow (e.g. `params-groupId-subgroupId`).
@@ -208,11 +208,6 @@ export class NodeMQTTOrchestrator {
     const existing = instance.nodeMap.get(nodeId);
 
     if (existing && existing.shadowName !== shadowName) {
-      if (
-        shadowName.split("-").length < existing.shadowName.split("-").length
-      ) {
-        return;
-      }
       NodeMQTTOrchestrator.unregisterNode(nodeId);
     }
 

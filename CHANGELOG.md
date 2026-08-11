@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.  
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [1.1.0]
+
+### Added
+
+#### Provisioning
+
+- Added an API to reset Wi-Fi credentials on provisioned devices.
+- Added support for retrying the provisioning flow after authentication failures.
+
+#### Connectivity
+
+- Added MQTT connection status callbacks for application transport listeners, enabling apps to observe transport connectivity changes in real time.
+
+### Changed
+
+#### Node management
+
+- Persist the node's last known connectivity status during construction, allowing newly created node instances to immediately reflect the previous connectivity state until fresh updates are received.
+
+#### Provisioning
+
+- Improved the provisioning online-wait flow by preventing stale membership shadow data from affecting device onboarding.
+
+### Fixed
+
+#### Provisioning
+
+- Fixed stale membership shadow handling during the provisioning online-wait phase to improve provisioning reliability and online state detection.
+
 ## [1.0.0]
 
 ### Added
