@@ -63,6 +63,11 @@ export class ESPRMNeoNode {
   subgroupIds: string[] = [];
   devices: ESPRMNeoDevice[] = [];
   services: ESPRMNeoService[] = [];
+  /**
+   * Last-known connectivity. Seeded from cached `connectivity_status` when
+   * present (cloud config does not provide it); otherwise starts offline until
+   * an MQTT shadow `online` update arrives.
+   */
   connectivityStatus: ESPRMNeoConnectivityStatusInterface = {
     isConnected: false,
     lastConnectionTimestamp: 0,
@@ -70,8 +75,8 @@ export class ESPRMNeoNode {
 
   /**
    * Transports currently usable for this node, keyed by mode.
-   * - `mqtt` (cloud) is added when the node reports online and removed when
-   *   it goes offline (via shadow updates or seeded `connectivity_status`).
+   * - `mqtt` (cloud) is added when the node is connected and removed when it
+   *   goes offline (from cached `connectivity_status` or shadow updates).
    * - `local` is added/removed at runtime by a `localDiscovery` subscriber as the
    *   node appears/disappears on the LAN (via {@link addTransport}/{@link removeTransport}).
    * Apps may also add custom string-keyed entries (pair with
@@ -116,18 +121,13 @@ export class ESPRMNeoNode {
     this.subgroupIds = asStringArray(subgroupIdOrIds);
     this.transportOrder = ESPRMNeoBase.getTransportOrder();
     this.availableTransports = {};
-    this.applyNodeConfig(config);
 
     if (config.connectivity_status) {
       this.connectivityStatus = config.connectivity_status;
     }
 
-    if (this.connectivityStatus.isConnected) {
-      this.addTransport(ESPTransportMode.mqtt, {
-        type: ESPTransportMode.mqtt,
-        metadata: {},
-      });
-    }
+    this.applyNodeConfig(config);
+    this.syncMqttTransportAvailability();
     this.subscribeToMqttUpdates();
   }
 
@@ -224,11 +224,15 @@ export class ESPRMNeoNode {
     );
 
     // Keep wire records for cache writes (never persist live class instances).
+    // Preserve last-known connectivity when the incoming config omits it
+    // (cloud node config does not include connectivity_status).
     this.wireConfig = {
       ...config,
       info,
       devices: deviceRecords,
       services: serviceRecords,
+      connectivity_status:
+        config.connectivity_status ?? this.connectivityStatus,
     };
 
     this.config = {
@@ -315,18 +319,15 @@ export class ESPRMNeoNode {
 
     this.applyConnectivityStatus(shadow, connectivityStatus);
 
-    ESPRMNeoStorage.setItem(
-      StorageKeys.NODE_CONFIG_PREFIX + this.nodeId,
-      JSON.stringify({ ...this.wireConfig, node_id: this.nodeId })
-    );
+    this.persistWireConfig();
 
     this.refreshConfigIfNcfgChanged(shadow);
   }
 
   /**
-   * Updates {@link connectivityStatus} and MQTT transport availability when the
-   * shadow reports `online`. Partial updates without `online` are ignored so
-   * an existing status is not cleared.
+   * Updates {@link connectivityStatus} when the shadow reports `online`, then
+   * syncs MQTT transport availability. Partial updates without `online` are
+   * ignored so an existing status is not cleared.
    */
   private applyConnectivityStatus(
     shadow: ESPRMNeoShadowDocument,
@@ -335,7 +336,16 @@ export class ESPRMNeoNode {
     if (shadow.state?.reported?.online === undefined) return;
 
     this.connectivityStatus = connectivityStatus;
-    if (connectivityStatus.isConnected) {
+    this.wireConfig.connectivity_status = connectivityStatus;
+    this.syncMqttTransportAvailability();
+  }
+
+  /**
+   * Registers the MQTT transport only while {@link connectivityStatus} reports
+   * the node as connected; removes it when offline.
+   */
+  private syncMqttTransportAvailability(): void {
+    if (this.connectivityStatus.isConnected) {
       this.addTransport(ESPTransportMode.mqtt, {
         type: ESPTransportMode.mqtt,
         metadata: {},
@@ -343,6 +353,18 @@ export class ESPRMNeoNode {
     } else {
       this.removeTransport(ESPTransportMode.mqtt);
     }
+  }
+
+  /** Persists {@link wireConfig} (including last-known connectivity) to storage. */
+  private persistWireConfig(): void {
+    ESPRMNeoStorage.setItem(
+      StorageKeys.NODE_CONFIG_PREFIX + this.nodeId,
+      JSON.stringify({
+        ...this.wireConfig,
+        node_id: this.nodeId,
+        connectivity_status: this.connectivityStatus,
+      })
+    );
   }
 
   /** When cloud `ncfg_ver` changes, refetch config and persist the new marker. */

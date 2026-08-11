@@ -181,7 +181,7 @@ describe("ESPRMNeoNode constructor", () => {
     });
   });
 
-  it("does not list mqtt transport when the node is offline", () => {
+  it("does not list mqtt transport when cached connectivity is offline", () => {
     const config = {
       ...fullConfig(),
       connectivity_status: { isConnected: false, lastConnectionTimestamp: 0 },
@@ -189,6 +189,17 @@ describe("ESPRMNeoNode constructor", () => {
 
     const node = new ESPRMNeoNode(config, GROUP_ID);
 
+    expect(node.connectivityStatus.isConnected).toBe(false);
+    expect(node.availableTransports.mqtt).toBeUndefined();
+  });
+
+  it("defaults connectivity to offline when config has no connectivity_status", () => {
+    const node = new ESPRMNeoNode(fullConfig(), GROUP_ID);
+
+    expect(node.connectivityStatus).toEqual({
+      isConnected: false,
+      lastConnectionTimestamp: 0,
+    });
     expect(node.availableTransports.mqtt).toBeUndefined();
   });
 });
