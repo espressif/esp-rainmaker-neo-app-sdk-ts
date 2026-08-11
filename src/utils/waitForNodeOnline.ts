@@ -10,8 +10,8 @@
  * Typical use: after provisioning WiFi credentials, the device joins the network and
  * connects to the cloud. There is no dedicated "online" MQTT topic — connectivity is
  * published as `state.reported.online` inside shadow update messages on the named
- * shadow `params-{groupId}` (firmware writes this after getGroupInfo; cloud presence
- * only clears online on disconnect).
+ * shadow `params-{groupId}` or `params-{groupId}-{subgroupIds}` (firmware writes this
+ * after getGroupInfo; cloud presence only clears online on disconnect).
  *
  * Matches app_sim `_wait_node_online`: subscribe first, then poll shadow GET on an
  * interval until `reported.online === true` (or a live MQTT update arrives). GET may
@@ -42,6 +42,12 @@ export interface WaitForNodeOnlineParams {
   nodeId: string;
   /** Group the node was associated with during provisioning (drives shadow name). */
   groupId: string;
+  /**
+   * Subgroup (room/CG) ids that currently contain the node.
+   * Omitted or empty ⇒ home-only shadow `params-{groupId}` (legacy callers).
+   * When set, shadow is `params-{groupId}-{sortedSubgroupIds}`.
+   */
+  subgroupIds?: string[];
   /** Logged-in user; used to connect MQTT if not already connected. */
   user: ESPRMNeoUser;
   timeoutMs?: number;
@@ -119,14 +125,16 @@ export function isNodeOnlineFromShadowPayload(payload: unknown): boolean {
 export async function waitForNodeOnline({
   nodeId,
   groupId,
+  subgroupIds,
   user,
   timeoutMs = DEFAULT_NODE_ONLINE_TIMEOUT_MS,
   pollIntervalMs = DEFAULT_NODE_ONLINE_POLL_INTERVAL_MS,
 }: WaitForNodeOnlineParams): Promise<void> {
-  const shadowName = constructShadowName(groupId);
+  const shadowName = constructShadowName(groupId, subgroupIds ?? []);
   logger.info("Waiting for node to come online", {
     nodeId,
     groupId,
+    subgroupIds: subgroupIds ?? [],
     shadowName,
     timeoutMs,
     pollIntervalMs,
@@ -214,10 +222,10 @@ export async function waitForNodeOnline({
       await user.connectMQTT();
     }
 
-    // 2. Register (if needed) and subscribe before the shadow may exist
-    if (!alreadyRegistered) {
-      NodeMQTTOrchestrator.registerNode(nodeId, shadowName);
-    }
+    // 2. Bind to the membership shadow and subscribe before the shadow may exist.
+    // Always registerNode so a leftover longer/stale binding for the same nodeId
+    // is rebound to constructShadowName(groupId, subgroupIds).
+    NodeMQTTOrchestrator.registerNode(nodeId, shadowName);
     await NodeMQTTOrchestrator.subscribeToNode(nodeId, onUpdate);
     logger.debug("Subscribed to node shadow for online wait", {
       nodeId,
