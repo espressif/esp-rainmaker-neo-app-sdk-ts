@@ -96,6 +96,16 @@ interface ESPProvisionAdapterInterface {
     ssid: string,
     passphrase: string
   ): Promise<ESPProvisionStatus>;
+  /**
+   * Clears the device's Wi-Fi state over the open provisioning session.
+   * Requires an established session; the user-node association is left intact.
+   *
+   * Optional so that adapters written against an earlier SDK keep compiling;
+   * `ESPDevice.resetWifiStatus` resolves `false` when it is absent.
+   * @param deviceName - Name of the connected provisioning device.
+   * @returns Promise resolving to `true` when the device acknowledged the reset.
+   */
+  resetWifiStatus?(deviceName: string): Promise<boolean>;
   disconnect(deviceName: string): Promise<void>;
 }
 

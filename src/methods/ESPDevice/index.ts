@@ -14,6 +14,8 @@ import "./SetProofOfPossession";
 import "./SendData";
 import "./InitializeSession";
 import "./SetNetworkCredentials";
+import "./ResetWifiStatus";
+import "./RetryNetworkCredentials";
 import "./InitiateUserNodeMapping";
 import "./VerifyUserNodeMapping";
 import "./StartAssistedClaiming";
