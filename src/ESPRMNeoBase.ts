@@ -234,7 +234,7 @@ export class ESPRMNeoBase {
 
   /**
    * Sets the local control adapter used to talk to nodes over the LAN via
-   * the `esp_local_ctrl` protocol.
+   * the `rmaker_local_ctrl` protocol.
    *
    * @param adapter - Adapter implementing {@link ESPLocalControlAdapterInterface}.
    * @throws {Error} If the SDK is not initialized or the adapter is invalid.

@@ -84,7 +84,7 @@ export interface ESPRMNeoBaseAdapters {
   storage?: ESPStorageAdapter;
   /** SoftAP / BLE provisioning implementation supplied by the host app. */
   provision?: ESPProvisionAdapterInterface;
-  /** LAN `esp_local_ctrl` transport implementation. */
+  /** LAN local-control transport implementation. */
   localControl?: ESPLocalControlAdapterInterface;
   /** LAN / mDNS discovery implementation. */
   localDiscovery?: ESPLocalDiscoveryAdapterInterface;

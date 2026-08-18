@@ -17,9 +17,10 @@ import { ServiceType } from "../../../utils/constants";
  * adapter (see {@link ESPRMNeoBase.setLocalDiscoveryAdapter}).
  *
  * - With no discovery config, the default local protocol is used
- *   (mDNS service `_esp_local_ctrl._tcp.` in the `local` domain).
- * - A custom {@link DiscoveryParamsInterface} can be supplied for other
- *   discovery protocols.
+ *   (mDNS service `_esp_rmaker_ctrl._tcp.` in the `local` domain — the
+ *   service advertised by RainMaker Neo firmware).
+ * - A custom {@link DiscoveryParamsInterface} can be supplied to browse any
+ *   other service type.
  */
 class ESPDiscoveryManager {
   /** Discovery parameters (service type / domain) passed to the adapter. */
@@ -35,7 +36,7 @@ class ESPDiscoveryManager {
       throw new Error("ESPLocalDiscoveryAdapter not set");
     }
     this.params = discoveryConfig || {
-      serviceType: ServiceType.ESP_LOCAL_CTRL_TCP,
+      serviceType: ServiceType.ESP_RMAKER_LOCAL_CTRL_TCP,
       domain: ESPDiscoveryProtocol.local,
     };
   }

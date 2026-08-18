@@ -32,7 +32,7 @@ enum ESPRMNeoEventType {
  * (e.g. mDNS service type and domain).
  */
 interface DiscoveryParamsInterface {
-  /** Service type to browse for, e.g. `_esp_local_ctrl._tcp.` */
+  /** Service type to browse for, e.g. `_esp_rmaker_ctrl._tcp.` */
   serviceType: string;
   /** Discovery domain, e.g. `local`. */
   domain: string;
