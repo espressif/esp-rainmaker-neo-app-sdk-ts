@@ -17,7 +17,10 @@ jest.mock("../../src/services/ESPTransport/ESPLocalControlTransport", () => ({
 import { ESPTransportManager } from "../../src/services/ESPTransport/ESPTransportManager";
 import { ESPMqttTransport } from "../../src/services/ESPTransport/ESPMqttTransport";
 import { ESPLocalControlTransport } from "../../src/services/ESPTransport/ESPLocalControlTransport";
-import { ESPTransportMode } from "../../src/types/transport";
+import {
+  ESPLocalControlProtocol,
+  ESPTransportMode,
+} from "../../src/types/transport";
 
 describe("ESPTransportManager", () => {
   beforeEach(() => {
@@ -41,12 +44,29 @@ describe("ESPTransportManager", () => {
     mockLocal.getParams.mockResolvedValue({});
     const config = {
       type: ESPTransportMode.local,
-      metadata: { baseUrl: "http://x" },
+      metadata: {
+        baseUrl: "http://x",
+        protocol: ESPLocalControlProtocol.rmakerLocalCtrl,
+      },
     };
     const mgr = new ESPTransportManager(config);
     await mgr.getParams({ node_id: "n1" });
     expect(ESPLocalControlTransport).toHaveBeenCalledWith(config);
     expect(mockLocal.getParams).toHaveBeenCalled();
+  });
+
+  it("builds the same transport for a local config with no protocol tag", async () => {
+    // `rmaker_local_ctrl` is the only local-control protocol, so an untagged
+    // config — e.g. one restored from a client-side transport registry —
+    // resolves to it too.
+    mockLocal.getParams.mockResolvedValue({});
+    const config = {
+      type: ESPTransportMode.local,
+      metadata: { baseUrl: "http://x" },
+    };
+    const mgr = new ESPTransportManager(config);
+    await mgr.getParams({ node_id: "n1" });
+    expect(ESPLocalControlTransport).toHaveBeenCalledWith(config);
   });
 
   it("throws for an unsupported transport type", () => {

@@ -1,7 +1,7 @@
 {
   "name": "@espressif/rainmaker-neo-base-sdk",
   "description": "ESP RainMaker Neo TypeScript SDK for JS-based apps — Cognito auth, MQTT control, device provisioning, groups, and real-time node updates.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/cjs/index.js",

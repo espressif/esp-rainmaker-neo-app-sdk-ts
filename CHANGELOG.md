@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.  
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [1.2.0]
+
+### Added
+
+#### Local Control
+
+- Added local control support with mDNS-based node discovery.
+- Added local control codec and endpoint constants.
+- Added configurable session and version endpoints for adapters.
+- Added session connection retries.
+
 ## [1.1.0]
 
 ### Added
