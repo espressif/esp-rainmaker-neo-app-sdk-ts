@@ -511,8 +511,6 @@ const ProvisionType = {
  * An object containing endpoint paths.
  */
 const Endpoint = {
-  /** The endpoint for local control. */
-  LOCAL_CTRL: "esp_local_ctrl/control",
   /** The endpoint for cloud user association. */
   CLOUD_USER_ASSOCIATION: "cloud_user_assoc",
   /** The endpoint for challenge-response and get-node-id protocol with the device. */
@@ -520,6 +518,70 @@ const Endpoint = {
   /** The endpoint for assisted claiming. */
   RM_CLAIM: "rmaker_claim",
 };
+
+/**
+ * Endpoint paths of the `rmaker_local_ctrl` protocol served by RainMaker Neo
+ * firmware (see the firmware's local-control endpoint protocol spec).
+ *
+ * All data endpoints inherit the security of the session established on
+ * {@link RMakerLocalCtrlEndpoint.SESSION}.
+ */
+const RMakerLocalCtrlEndpoint = {
+  /** Protocomm session-security endpoint (SEC1 with/without PoP, or SEC2). */
+  SESSION: "rmaker_local_ctrl/session",
+  /** POST any payload; responds with the service info JSON (`sec_ver`, `cap`, …). */
+  VERSION: "rmaker_local_ctrl/version",
+  /** Reads the params JSON — protobuf `CmdGetData`, fragmented response. */
+  GET_PARAMS: "get_params",
+  /** Reads the node config JSON — protobuf `CmdGetData`, fragmented response. */
+  GET_CONFIG: "get_config",
+  /** Writes params — raw JSON request and response (no protobuf). */
+  SET_PARAMS: "set_params",
+} as const;
+
+/**
+ * Root key of the JSON served by {@link RMakerLocalCtrlEndpoint.VERSION}, i.e.
+ * `{"rmaker_local_ctrl": {"ver": …, "sec_ver": …, "cap": [...]}}`. Passed to the
+ * local-control adapter so the native layer probes the right scheme version.
+ */
+const RMAKER_LOCAL_CTRL_VERSION_KEY = "rmaker_local_ctrl";
+
+/**
+ * Maximum fragment size (bytes) the firmware serves per `RespGetData`. Reads
+ * loop with `Offset += Payload.length` until `TotalLen` is reached; this value
+ * is informational (the device dictates the actual fragment length).
+ */
+const RMAKER_LOCAL_CTRL_FRAGMENT_SIZE = 200;
+
+/**
+ * `status` values in a `set_params` raw-JSON response.
+ */
+const RMakerLocalCtrlSetParamsStatus = {
+  SUCCESS: "success",
+  FAIL: "fail",
+} as const;
+
+/**
+ * mDNS TXT record keys advertised by the `_esp_rmaker_ctrl._tcp` service.
+ */
+const RMakerLocalCtrlTxtKey = {
+  /** Node ID (also the service instance name and hostname). */
+  NODE_ID: "node_id",
+  /** Comma-separated active capabilities — see {@link RMakerLocalCtrlCapability}. */
+  CAP: "cap",
+} as const;
+
+/**
+ * Capability tokens found in the `cap` TXT record. A node advertising only
+ * `ch_resp` is reachable for on-network user-node association but *not* for
+ * param control, so it must not be registered as a local control transport.
+ */
+const RMakerLocalCtrlCapability = {
+  /** Params/config endpoints are registered. */
+  LOCAL_CTRL: "local_ctrl",
+  /** Challenge-response (on-network user-node association) is registered. */
+  CH_RESP: "ch_resp",
+} as const;
 
 /**
  * Assisted-claiming REST paths, on the deployment's main API and SigV4-signed
@@ -693,8 +755,12 @@ const ProvErrorCodes = {
  * @enum {string}
  */
 const ServiceType = {
-  /** Represents the ESP local control TCP service type. */
-  ESP_LOCAL_CTRL_TCP: "_esp_local_ctrl._tcp.",
+  /**
+   * Service type advertised by RainMaker Neo firmware. A single instance serves
+   * the `rmaker_local_ctrl` endpoints; the `cap` TXT record says which endpoint
+   * sets are active. This is the default for local discovery in this SDK.
+   */
+  ESP_RMAKER_LOCAL_CTRL_TCP: "_esp_rmaker_ctrl._tcp.",
 };
 
 /**
@@ -945,6 +1011,12 @@ export {
   AWSCredentialsErrorMessages,
   GroupUserAliases,
   Endpoint,
+  RMakerLocalCtrlEndpoint,
+  RMAKER_LOCAL_CTRL_VERSION_KEY,
+  RMAKER_LOCAL_CTRL_FRAGMENT_SIZE,
+  RMakerLocalCtrlSetParamsStatus,
+  RMakerLocalCtrlTxtKey,
+  RMakerLocalCtrlCapability,
   ProvisionType,
   ProvErrorCodes,
   ServiceType,

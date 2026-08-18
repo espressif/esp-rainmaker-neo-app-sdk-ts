@@ -22,7 +22,10 @@ import { ESPRMNeoUser } from "../../src/ESPRMNeoUser";
 import "../../src/methods/ESPRMNeoUser/EventSubscription";
 import { ESPDiscoveryManager } from "../../src/services/ESPTransport/ESPDiscovery/ESPDiscoveryManager";
 import { ESPRMNeoEventType } from "../../src/types/discovery";
-import { ESPTransportMode } from "../../src/types/transport";
+import {
+  ESPLocalControlProtocol,
+  ESPTransportMode,
+} from "../../src/types/transport";
 import {
   emitNodeUpdate,
   clearNodeUpdateListeners,
@@ -74,7 +77,10 @@ describe("ESPRMNeoUser local discovery subscription", () => {
         nodeId: "node-1",
         transportDetails: {
           type: ESPTransportMode.local,
-          metadata: { baseUrl: "http://192.168.1.42" },
+          metadata: {
+            baseUrl: "http://192.168.1.42",
+            protocol: ESPLocalControlProtocol.rmakerLocalCtrl,
+          },
         },
       },
     ]);
@@ -94,7 +100,10 @@ describe("ESPRMNeoUser local discovery subscription", () => {
 
     expect(node.availableTransports[ESPTransportMode.local]).toEqual({
       type: ESPTransportMode.local,
-      metadata: { baseUrl: "http://192.168.1.42" },
+      metadata: {
+        baseUrl: "http://192.168.1.42",
+        protocol: ESPLocalControlProtocol.rmakerLocalCtrl,
+      },
     });
   });
 

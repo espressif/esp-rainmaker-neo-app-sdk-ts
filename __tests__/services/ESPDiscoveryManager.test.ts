@@ -30,11 +30,11 @@ describe("ESPDiscoveryManager", () => {
     expect(() => new ESPDiscoveryManager()).toThrow(/ESPLocalDiscoveryAdapter not set/);
   });
 
-  it("defaults to the local mDNS discovery params", () => {
+  it("defaults to the RainMaker Neo local mDNS discovery params", () => {
     setAdapter();
     const mgr = new ESPDiscoveryManager();
     expect(mgr.params).toEqual({
-      serviceType: ServiceType.ESP_LOCAL_CTRL_TCP,
+      serviceType: ServiceType.ESP_RMAKER_LOCAL_CTRL_TCP,
       domain: ESPDiscoveryProtocol.local,
     });
   });
