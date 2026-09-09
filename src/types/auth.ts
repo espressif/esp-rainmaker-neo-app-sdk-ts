@@ -33,6 +33,13 @@ export interface TokenRefreshRequest {
 export interface TokenRefreshApiResponse {
   access_token: string;
   id_token: string;
+  /**
+   * Rotated refresh token. The backend spends the presented refresh token on
+   * every redemption and issues a new one; replaying a spent token is treated
+   * as reuse and terminates the whole login. Callers must persist this value.
+   * Optional only for backends that do not rotate.
+   */
+  refresh_token?: string;
 }
 
 /** Request body for POST /v1/user/auth/token (Login). */
