@@ -19,8 +19,12 @@ import { setupSdkTest, DEFAULT_TEST_TOKENS } from "../../test-utils/sdk-test-har
 import { ESPRMNeoAuth } from "../../src/ESPRMNeoAuth";
 import { ESPRMNeoBase } from "../../src/ESPRMNeoBase";
 import { ESPRMNeoUser } from "../../src/ESPRMNeoUser";
-import { StorageKeys } from "../../src/utils/constants";
+import { StorageKeys, TokenErrorCodes } from "../../src/utils/constants";
+import { isTokenExpired } from "../../src/services/ESPRMNeoHelpers/CheckTokenExpiry";
 
+// CheckTokenExpiry is globally mocked in __tests__/utils/setup.ts, so this is
+// already a jest.fn(); jest.mocked() only adds the mock typing.
+const mockIsTokenExpired = jest.mocked(isTokenExpired);
 const h = setupSdkTest();
 
 describe("ESPRMNeoUser", () => {
@@ -60,6 +64,96 @@ describe("ESPRMNeoUser", () => {
       } as never);
 
       expect(() => h.user()).not.toThrow();
+    });
+  });
+
+  describe("getAccessToken / getIdToken refresh", () => {
+    const mockRefreshResponse = {
+      accessToken: "new-access-token",
+      idToken: "new-id-token",
+      refreshToken: "new-refresh-token",
+    };
+
+    function mockGetRefreshedTokens() {
+      (ESPRMNeoAuth as unknown as Record<string, jest.Mock>).getRefreshedTokens =
+        jest.fn().mockResolvedValue(mockRefreshResponse);
+    }
+
+    it("returns stored access token when not expired without refreshing", async () => {
+      mockGetRefreshedTokens();
+      mockIsTokenExpired.mockReturnValue(false);
+      const user = h.user();
+
+      await expect(user.getAccessToken()).resolves.toBe(
+        DEFAULT_TEST_TOKENS.accessToken
+      );
+      expect(
+        (ESPRMNeoAuth as unknown as Record<string, jest.Mock>).getRefreshedTokens
+      ).not.toHaveBeenCalled();
+    });
+
+    it("refreshes session when access token is expired", async () => {
+      mockGetRefreshedTokens();
+      mockIsTokenExpired.mockReturnValue(true);
+      const user = h.user();
+
+      await expect(user.getAccessToken()).resolves.toBe(
+        mockRefreshResponse.accessToken
+      );
+      expect(
+        (ESPRMNeoAuth as unknown as Record<string, jest.Mock>).getRefreshedTokens
+      ).toHaveBeenCalledWith(DEFAULT_TEST_TOKENS.refreshToken);
+    });
+
+    it("refreshes session when id token is expired", async () => {
+      mockGetRefreshedTokens();
+      mockIsTokenExpired.mockReturnValue(true);
+      const user = h.user();
+
+      await expect(user.getIdToken()).resolves.toBe(mockRefreshResponse.idToken);
+      expect(
+        (ESPRMNeoAuth as unknown as Record<string, jest.Mock>).getRefreshedTokens
+      ).toHaveBeenCalledWith(DEFAULT_TEST_TOKENS.refreshToken);
+    });
+
+    it("dedupes concurrent refresh calls after expiry", async () => {
+      let resolveRefresh!: (value: typeof mockRefreshResponse) => void;
+      const refreshStarted = new Promise<void>((resolveStarted) => {
+        (ESPRMNeoAuth as unknown as Record<string, jest.Mock>).getRefreshedTokens =
+          jest.fn().mockImplementation(
+            () =>
+              new Promise((resolve) => {
+                resolveRefresh = resolve;
+                resolveStarted();
+              })
+          );
+      });
+      mockIsTokenExpired.mockReturnValue(true);
+      const user = h.user();
+
+      const first = user.getAccessToken();
+      const second = user.getAccessToken();
+      await refreshStarted;
+      resolveRefresh(mockRefreshResponse);
+
+      await expect(Promise.all([first, second])).resolves.toEqual([
+        mockRefreshResponse.accessToken,
+        mockRefreshResponse.accessToken,
+      ]);
+      expect(
+        (ESPRMNeoAuth as unknown as Record<string, jest.Mock>).getRefreshedTokens
+      ).toHaveBeenCalledTimes(1);
+    });
+
+    it("throws EXTEND_SESSION_FAILED when refresh API fails", async () => {
+      (ESPRMNeoAuth as unknown as Record<string, jest.Mock>).getRefreshedTokens =
+        jest.fn().mockRejectedValue(new Error("Refresh failed"));
+      mockIsTokenExpired.mockReturnValue(true);
+      const user = h.user();
+
+      await expect(user.getAccessToken()).rejects.toMatchObject({
+        code: TokenErrorCodes.EXTEND_SESSION_FAILED,
+      });
     });
   });
 

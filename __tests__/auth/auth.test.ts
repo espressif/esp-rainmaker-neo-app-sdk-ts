@@ -46,10 +46,15 @@ describe("ESPRMNeoAuth", () => {
     const mockAccessToken = "mock-access-token-456";
     const mockIdToken = "mock-id-token-789";
 
-    it("should get refreshed tokens with valid refresh token", async () => {
+    const mockRotatedRefreshToken = "mock-rotated-refresh-token-000";
+
+    it("returns the rotated refresh token from the response", async () => {
+      // The backend spends the presented refresh token and issues a new one;
+      // returning the presented token would make the next refresh a replay.
       h.userApi.postUserApi.mockResolvedValue({
         access_token: mockAccessToken,
         id_token: mockIdToken,
+        refresh_token: mockRotatedRefreshToken,
       });
 
       const result = await ESPRMNeoAuth.getRefreshedTokens(mockRefreshToken);
@@ -61,9 +66,33 @@ describe("ESPRMNeoAuth", () => {
       expect(result).toEqual({
         accessToken: mockAccessToken,
         idToken: mockIdToken,
-        refreshToken: mockRefreshToken,
+        refreshToken: mockRotatedRefreshToken,
       });
+      expect(result.refreshToken).not.toBe(mockRefreshToken);
     });
+
+    it.each([
+      ["absent", {}],
+      ["empty string", { refresh_token: "" }],
+      ["null", { refresh_token: null }],
+    ])(
+      "falls back to the presented refresh token when the response has none (%s)",
+      async (_name, extra) => {
+        h.userApi.postUserApi.mockResolvedValueOnce({
+          access_token: mockAccessToken,
+          id_token: mockIdToken,
+          ...extra,
+        });
+
+        const result = await ESPRMNeoAuth.getRefreshedTokens(mockRefreshToken);
+
+        expect(result).toEqual({
+          accessToken: mockAccessToken,
+          idToken: mockIdToken,
+          refreshToken: mockRefreshToken,
+        });
+      }
+    );
 
     it("should throw error when refresh fails", async () => {
       h.userApi.postUserApi.mockRejectedValueOnce(
