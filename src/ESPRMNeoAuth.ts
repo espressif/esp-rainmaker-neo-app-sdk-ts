@@ -46,6 +46,13 @@ export class ESPRMNeoAuth {
    *
    * Calls `POST /v1/user/auth/token/refresh` (unauthenticated; the backend
    * validates `refresh_token` in the body only).
+   *
+   * The backend rotates the refresh token on every redemption: the presented
+   * token is spent and the response carries its replacement. Presenting a
+   * spent token again is treated as reuse and kills the login, so the rotated
+   * token from the response is returned here (and must be persisted by the
+   * caller). Falls back to the presented token only when the backend does not
+   * return one.
    */
   public static async getRefreshedTokens(
     refreshToken: string
@@ -69,10 +76,17 @@ export class ESPRMNeoAuth {
       );
     }
 
+    const rotatedRefreshToken = apiResponse.refresh_token || refreshToken;
+    if (!apiResponse.refresh_token) {
+      logger.debug(
+        "getRefreshedTokens: response carried no refresh_token; keeping presented token"
+      );
+    }
+
     return {
       accessToken: apiResponse.access_token,
       idToken: apiResponse.id_token,
-      refreshToken,
+      refreshToken: rotatedRefreshToken,
     };
   }
 }

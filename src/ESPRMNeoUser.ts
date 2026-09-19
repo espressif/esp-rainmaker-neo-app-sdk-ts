@@ -8,6 +8,7 @@ import { StorageKeys, TokenErrorCodes } from "./utils/constants";
 import { UserTokensData } from "./types/input";
 import type { EventCallbacks } from "./types/discovery";
 import { ESPRMNeoStorage } from "./services/ESPRMNeoStorage/ESPRMNeoStorage";
+import { isTokenExpired } from "./services/ESPRMNeoHelpers/CheckTokenExpiry";
 import { ESPRMNeoAuth } from "./ESPRMNeoAuth";
 import { ESPTokenError } from "./utils/error/ESPTokenError";
 import { tokenErrorMessages } from "./utils/error/errorMessages";
@@ -31,6 +32,12 @@ export class ESPRMNeoUser {
    * {@link unsubscribe} / {@link removeAllCallbacks} can stop them.
    */
   eventTeardowns: Record<string, { stop(): void }> = {};
+
+  /**
+   * Shared in-flight session refresh so concurrent getAccessToken/getIdToken
+   * calls after expiry only hit the refresh API once.
+   */
+  private static sessionRefreshPromise: Promise<void> | null = null;
 
   /**
    * Initializes the ESPRMNeoUser instance and persists the tokens to storage.
@@ -57,23 +64,80 @@ export class ESPRMNeoUser {
     return token;
   }
 
+  /** True when the JWT is expired or cannot be decoded. */
+  private static needsRefresh(token: string): boolean {
+    try {
+      return isTokenExpired(token);
+    } catch {
+      return true;
+    }
+  }
+
   /**
-   * Returns the current Cognito access token from storage.
-   * @throws {ESPTokenError} When no access token is stored (not logged in).
+   * Refreshes Cognito tokens via the stored refresh token.
+   * Concurrent callers share one in-flight refresh.
+   */
+  private static async refreshSession(): Promise<void> {
+    if (ESPRMNeoUser.sessionRefreshPromise) {
+      return ESPRMNeoUser.sessionRefreshPromise;
+    }
+
+    ESPRMNeoUser.sessionRefreshPromise = (async () => {
+      const refreshToken = await ESPRMNeoUser.requireToken(
+        StorageKeys.REFRESHTOKEN,
+        TokenErrorCodes.MISSING_REFRESH_TOKEN
+      );
+      try {
+        await ESPRMNeoUser.extendSession(refreshToken);
+      } catch {
+        throw new ESPTokenError(TokenErrorCodes.EXTEND_SESSION_FAILED);
+      }
+    })().finally(() => {
+      ESPRMNeoUser.sessionRefreshPromise = null;
+    });
+
+    return ESPRMNeoUser.sessionRefreshPromise;
+  }
+
+  /**
+   * Returns a stored access/id token, refreshing the session first when expired.
+   * Mirrors classic RainMaker `ESPRMUser.getAccessToken()` mid-session refresh.
+   */
+  private static async getValidToken(
+    storageKey: string,
+    missingCode: keyof typeof tokenErrorMessages
+  ): Promise<string> {
+    const token = await ESPRMNeoUser.requireToken(storageKey, missingCode);
+    if (!ESPRMNeoUser.needsRefresh(token)) {
+      return token;
+    }
+
+    logger.debug("Token expired; refreshing session");
+    await ESPRMNeoUser.refreshSession();
+    return ESPRMNeoUser.requireToken(storageKey, missingCode);
+  }
+
+  /**
+   * Returns a valid Cognito access token from storage.
+   * Refreshes the session when the stored access token is expired.
+   *
+   * @throws {ESPTokenError} When no access/refresh token is stored, or refresh fails.
    */
   public async getAccessToken(): Promise<string> {
-    return ESPRMNeoUser.requireToken(
+    return ESPRMNeoUser.getValidToken(
       StorageKeys.ACCESSTOKEN,
       TokenErrorCodes.MISSING_ACCESS_TOKEN
     );
   }
 
   /**
-   * Returns the current Cognito ID token from storage.
-   * @throws {ESPTokenError} When no ID token is stored (not logged in).
+   * Returns a valid Cognito ID token from storage.
+   * Refreshes the session when the stored ID token is expired.
+   *
+   * @throws {ESPTokenError} When no ID/refresh token is stored, or refresh fails.
    */
   public async getIdToken(): Promise<string> {
-    return ESPRMNeoUser.requireToken(
+    return ESPRMNeoUser.getValidToken(
       StorageKeys.IDTOKEN,
       TokenErrorCodes.MISSING_ID_TOKEN
     );
