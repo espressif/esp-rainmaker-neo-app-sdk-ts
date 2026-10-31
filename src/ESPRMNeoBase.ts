@@ -70,6 +70,14 @@ export class ESPRMNeoBase {
     createDefaultTransportOrder();
 
   /**
+   * Data models whose nodes have no AWS IoT shadow, registered by whichever
+   * satellite SDK owns that data model. The base SDK deliberately does not
+   * know which models those are — it only needs to know not to register such
+   * a node for MQTT, because the shadow GET would always 404.
+   */
+  private static shadowlessDataModels: Set<string> = new Set();
+
+  /**
    * Configures the ESP RainMaker Neo SDK with the given options.
    * Must be called before using any other SDK functionality.
    *
@@ -248,6 +256,28 @@ export class ESPRMNeoBase {
       ConfigErrorCodes.INVALID_LOCAL_CONTROL_ADAPTER
     );
     ESPRMNeoBase._localControlAdapter = adapter;
+  }
+
+  /**
+   * Declares that nodes carrying `dataModel` have no AWS IoT shadow, so the
+   * base SDK must not register them for MQTT. Call from a satellite SDK's
+   * init, before any node is constructed.
+   *
+   * @param dataModel - `NodeConfig.data_model` value owned by the satellite.
+   */
+  public static registerShadowlessDataModel(dataModel: string): void {
+    if (!dataModel) return;
+    ESPRMNeoBase.shadowlessDataModels.add(dataModel);
+  }
+
+  /**
+   * Whether a node config's data model was declared shadowless.
+   *
+   * @param dataModel - `NodeConfig.data_model`, may be undefined.
+   * @returns `true` when the node has no AWS IoT shadow.
+   */
+  public static isShadowlessDataModel(dataModel?: string): boolean {
+    return !!dataModel && ESPRMNeoBase.shadowlessDataModels.has(dataModel);
   }
 
   /**
