@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.  
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [1.2.2]
+
+### Added
+
+#### Node Management
+
+- Added registerShadowlessDataModel() and isShadowlessDataModel() on ESPRMNeoBase so satellite SDKs can declare data models whose nodes have no AWS IoT shadow.
+- Skipped MQTT subscription in the ESPRMNeoNode constructor for nodes whose data model is registered as shadowless, avoiding a guaranteed shadow GET 404.
+
+#### Services
+
+- Exported ESPSigV4APIManager so first-party SDK layers can reuse its temporary-credential lifecycle for signing requests to endpoints outside the base SDK.
+
 ## [1.2.1]
 
 ### Fixed

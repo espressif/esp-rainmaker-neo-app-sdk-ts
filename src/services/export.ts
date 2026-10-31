@@ -32,6 +32,24 @@
 export { ESPRMNeoSubscriptionManager } from "./ESPRMNeoSubscriptionManager";
 
 /**
+ * Signed-request manager, for first-party SDK layers built on this base.
+ *
+ * The exception to the internal rule above, because there is no alternative: a
+ * layer such as the Neo Matter SDK calls endpoints this base does not know
+ * about, and signing them needs the temporary-credential lifecycle this class
+ * owns (fetch, expiry, refresh, 403-retry). The public SigV4 helpers in
+ * `utils/export.ts` sign a request but cannot obtain credentials, so composing
+ * one outside this class would mean duplicating that lifecycle.
+ *
+ * Safe to expose: `getInstance()` throws until `ESPRMNeoBase.configure()` has
+ * run, so misuse fails immediately rather than silently. The RM base SDK
+ * exports its equivalent (`ESPRMAPIManager`) for the same reason.
+ *
+ * App code should still go through the domain classes.
+ */
+export { ESPSigV4APIManager } from "./ESPSigV4APIManager";
+
+/**
  * MQTT transport contract that app-supplied MQTT adapters must satisfy.
  * Consumed by apps passing an adapter via `ESPRMNeoBaseConfig.mqttAdapter`.
  */

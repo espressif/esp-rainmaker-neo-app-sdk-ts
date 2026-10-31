@@ -128,7 +128,12 @@ export class ESPRMNeoNode {
 
     this.applyNodeConfig(config);
     this.syncMqttTransportAvailability();
-    this.subscribeToMqttUpdates();
+    // A node whose data model a satellite SDK declared shadowless has no AWS
+    // IoT shadow, so the GET behind this subscribe would 404 on every
+    // construction. Which models those are is the satellite's business.
+    if (!ESPRMNeoBase.isShadowlessDataModel(config.data_model)) {
+      this.subscribeToMqttUpdates();
+    }
   }
 
   /**
