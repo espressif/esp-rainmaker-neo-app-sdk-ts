@@ -8,7 +8,8 @@
  * ESP Rainmaker Neo Base SDK
  *
  * Public entry point. Re-exports core classes (ESPRMNeoBase, ESPRMNeoAuth, ESPRMNeoUser,
- * ESPRMNeoGroup, ESPRMNeoNode, ESPDevice, etc.), types, utils, and MQTT adapter interfaces.
+ * ESPRMNeoGroup, ESPRMNeoNode, ESPDevice, etc.), ESPSigV4APIManager,
+ * ESPRMNeoAPIManager, types, utils, and MQTT adapter interfaces.
  */
 
 // Core Classes
