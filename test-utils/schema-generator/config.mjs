@@ -60,6 +60,7 @@ export const specs = [
       { method: "delete", path: "/v1/groups/{groupId}/users/{userId}",                             statuses: ["200"], requestBody: false },
       { method: "delete", path: "/v1/groups/{groupId}/subgroups/{subGroupId}/users/{userId}",      statuses: ["200"], requestBody: false },
       { method: "delete", path: "/v1/groups/{groupId}/nodes/{nodeId}",                             statuses: ["200"], requestBody: false },
+      { method: "post",   path: "/v1/groups/{groupId}/nodes/{nodeId}/assumed-roles",               statuses: ["200"], requestBody: true  },
       // node config: spec documents no 2xx for PUT/DELETE, so only GET is fingerprintable
       { method: "get",    path: "/v1/groups/{groupId}/nodes/{nodeId}/config",                      statuses: ["200"], requestBody: false },
       { method: "get",    path: "/v1/groups/{groupId}/nodes/{nodeId}/triggers",                    statuses: ["200"], requestBody: false },

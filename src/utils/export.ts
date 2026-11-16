@@ -6,7 +6,6 @@
 
 export * from "./awsShadowTopics";
 export * from "./coerce";
-export * from "./awsSigv4Utils";
 export * from "./awsUtils";
 export * from "./constants";
 export * from "./logger";

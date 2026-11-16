@@ -53,6 +53,7 @@
       "DELETE /v1/groups/{groupId}/users/{userId}": "6bd9fc00291ebd5b86609453d5a653bbe511754a19cfba4866fa76d4070d0032",
       "DELETE /v1/groups/{groupId}/subgroups/{subGroupId}/users/{userId}": "662300f8ed9fe51b2f8a010856da684dba73c9af7563970d69077596d51dbd2e",
       "DELETE /v1/groups/{groupId}/nodes/{nodeId}": "3fa90b152f78ca657abc5ab193d8befe3a0df5f521933d1a499b6e9921dc1071",
+      "POST /v1/groups/{groupId}/nodes/{nodeId}/assumed-roles": "0cb12fa55299bc15d068bd90084e71d3b952830c155b0817dcb07137602dec27",
       "GET /v1/groups/{groupId}/nodes/{nodeId}/config": "8c9dab35181f1e30108193a936a1db081cc3463c0f0ebf1d3c4cea14f389563c",
       "GET /v1/groups/{groupId}/nodes/{nodeId}/triggers": "7bd5fb33e503224d10035c231b42489dba8e6cee79e3f27856839ad1ae4968c4",
       "PUT /v1/groups/{groupId}/nodes/{nodeId}/triggers": "7c5ed24c97fd66f7bd0dd8dbfd63c2a0a9698414a6b457dbfcb4c466b03950f8",
@@ -163,5 +164,5 @@
       "FcmData": "54c0438cfcd5f391f33a99a08b61078318b8d6d82f3cf4e40e925664159a0676"
     }
   },
-  "fingerprintsGeneratedAt": "2026-08-05T08:31:14.795Z"
+  "fingerprintsGeneratedAt": "2026-11-13T14:59:37.738Z"
 }
