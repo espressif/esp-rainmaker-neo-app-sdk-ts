@@ -66,8 +66,8 @@ export class ESPRMNeoAPIManager {
 
   /**
    * `protected` (not `private`) so `ESPSigV4APIManager` can `extends` this
-   * class and call `super()`. External construction is blocked by the class
-   * itself not being publicly exported from `services/export.ts`.
+   * class and call `super()`. External code uses `getInstance()`; only
+   * `initializeAPIManager` in this module constructs the singleton.
    */
   protected constructor() {}
 

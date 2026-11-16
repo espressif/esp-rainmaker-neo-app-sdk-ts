@@ -717,24 +717,22 @@ describe("assumeRole", () => {
     });
   });
 
-  it("request contract: merges services and node_id into the body", async () => {
+  it("request contract: POSTs per-node assumed-roles with services only", async () => {
     h.api.respond(
       "POST",
-      ASSUME_ROUTE,
+      "/v1/groups/:gid/nodes/:nid/assumed-roles",
       validated("AssumeRoleResponse", { access_key: "a", secret_key: "s", session_token: "t" })
     );
 
     await h.user().assumeRole("AKIA-ID", "secret-id", "session-id", {
       services: ["s3", "kvs"],
       nodeId: "node-1",
+      groupId: "grp-1",
     });
 
-    expect(h.api.callsTo("POST", ASSUME_ROUTE)[0].data).toEqual({
-      access_key: "AKIA-ID",
-      secret_key: "secret-id",
-      session_token: "session-id",
-      services: ["s3", "kvs"],
-      node_id: "node-1",
+    expect(h.api.callsTo("POST", "/v1/groups/:gid/nodes/:nid/assumed-roles")[0]).toMatchObject({
+      path: "/v1/groups/grp-1/nodes/node-1/assumed-roles",
+      data: { services: ["s3", "kvs"] },
     });
   });
 

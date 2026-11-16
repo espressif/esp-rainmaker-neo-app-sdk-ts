@@ -423,6 +423,9 @@ const TriggerErrorMessages = {
 const AssumeRoleErrorMessages = {
   /** Thrown when `services` is provided without a `nodeId`. */
   NODE_ID_REQUIRED: "assumeRole: nodeId is required when services is provided",
+  /** Thrown when `services` is provided without a `groupId`. */
+  GROUP_ID_REQUIRED:
+    "assumeRole: groupId is required when services is provided",
   /** Thrown when the assume-role response is missing required credential fields. */
   INVALID_RESPONSE:
     "Invalid assume role response: missing required credential fields",
@@ -951,6 +954,9 @@ const APIPathV1 = {
   /** DELETE /v1/groups/{groupId}/nodes/{nodeId} - Remove node from group (disassociation) */
   groupNode: (groupId: string, nodeId: string) =>
     `/v1/groups/${groupId}/nodes/${nodeId}`,
+  /** POST /v1/groups/{groupId}/nodes/{nodeId}/assumed-roles — per-node S3/KVS credentials */
+  groupNodeAssumedRoles: (groupId: string, nodeId: string) =>
+    `/v1/groups/${groupId}/nodes/${nodeId}/assumed-roles`,
   /** /v1/groups/{groupId}/nodes/{nodeId}/config */
   groupNodeConfig: (groupId: string, nodeId: string) =>
     `/v1/groups/${groupId}/nodes/${nodeId}/config`,

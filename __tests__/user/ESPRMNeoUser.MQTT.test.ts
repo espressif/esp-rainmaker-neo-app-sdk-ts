@@ -176,7 +176,7 @@ describe("ESPRMNeoUser MQTT Methods", () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it("should POST services and node_id for per-node service credentials", async () => {
+    it("should POST services to the per-node assumed-roles route", async () => {
       const mockResponse = {
         access_key: "node-access-key",
         secret_key: "node-secret-key",
@@ -188,19 +188,23 @@ describe("ESPRMNeoUser MQTT Methods", () => {
         "test-access-key",
         "test-secret-key",
         "test-session-token",
-        { services: ["s3", "kvs"], nodeId: "node-1" }
+        { services: ["s3", "kvs"], nodeId: "node-1", groupId: "grp-1" }
       );
 
       const [endpoint, body] = mockAPIManager.post.mock.calls[0];
-      expect(endpoint).toBe("/v1/assumed-roles");
-      expect(body).toEqual({
-        access_key: "test-access-key",
-        secret_key: "test-secret-key",
-        session_token: "test-session-token",
-        services: ["s3", "kvs"],
-        node_id: "node-1",
-      });
+      expect(endpoint).toBe("/v1/groups/grp-1/nodes/node-1/assumed-roles");
+      expect(body).toEqual({ services: ["s3", "kvs"] });
       expect(result).toEqual(mockResponse);
+    });
+
+    it("should throw when services is set without groupId", async () => {
+      await expect(
+        userInstance.assumeRole("key", "secret", "token", {
+          services: ["s3"],
+          nodeId: "node-1",
+        })
+      ).rejects.toThrow(AssumeRoleErrorMessages.GROUP_ID_REQUIRED);
+      expect(mockAPIManager.post).not.toHaveBeenCalled();
     });
 
     it("should throw when services is set without nodeId", async () => {
