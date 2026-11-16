@@ -2208,6 +2208,33 @@
         }
       }
     },
+    "request:POST /v1/groups/{groupId}/nodes/{nodeId}/assumed-roles": {
+      "type": "object",
+      "required": [
+        "services"
+      ],
+      "properties": {
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Tags to be associated with the assumed role session"
+        },
+        "services": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "s3",
+              "kvs"
+            ]
+          },
+          "description": "Services to scope the returned credentials to, for the single node in the path.\n- \"s3\": S3 permissions scoped to node-data/{nodeId}/* for that node.\n- \"kvs\": KVS viewer permissions scoped to channel/rmng-v1-{nodeId}/* for that node.\nThe response contains ONLY the listed service permissions — no IoT/MQTT statements.\n"
+        }
+      }
+    },
     "request:PUT /v1/groups/{groupId}/nodes/{nodeId}/triggers": {
       "type": "object",
       "required": [
