@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.  
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
+## [1.2.3]
+
+### Added
+
+#### Services
+
+- Exported ESPRMNeoAPIManager so first-party SDK layers can reuse the Bearer / unsigned User API client for routes this base does not wrap.
+
+### Changed
+
+#### Authentication
+
+- Per-node `assumeRole` service credentials (S3/KVS) now use `POST /v1/groups/{groupId}/nodes/{nodeId}/assumed-roles` instead of embedding `services` and `node_id` in the `/v1/assumed-roles` request.
+- `assumeRole` now requires `groupId` alongside `nodeId` when `options.services` is set.
+
+### Removed
+
+#### Public API
+
+- Removed the public re-export of SigV4 signing utilities from `utils/export.ts`; use ESPSigV4APIManager for signed API calls.
+
 ## [1.2.2]
 
 ### Added
